@@ -18,7 +18,7 @@ package-install:
 	python3 -m pip install dist/*.whl
 
 lint:
-	poetry run flake8 gendiff tests
+	poetry run flake8 page_analyzer
 
 test:
 	poetry run pytest
