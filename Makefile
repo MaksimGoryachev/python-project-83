@@ -24,7 +24,7 @@ test:
 	poetry run pytest
 
 test-coverage:
-	poetry run pytest --cov=gendiff --cov-report xml tests/
+	poetry run pytest --cov=page_analyzer --cov-report xml tests/
 
 package-reinstall:
 	python3 -m pip install --force-reinstall dist/*.whl
