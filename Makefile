@@ -2,7 +2,7 @@ install:
 		poetry install
 
 dev:
-		poetry run flask --app page_analyzer:app run
+		poetry run flask --app page_analyzer:app --debug run
 
 PORT ?= 8000
 start:
@@ -11,25 +11,16 @@ start:
 build: check
 		poetry build
 
-publish:
-		poetry publish --dry-run
-
-package-install:
-		python3 -m pip install dist/*.whl
-
 lint:
-		poetry run flake8 page_analyzer
+		poetry run flake8 page_analyzer test
 
 test:
 		poetry run pytest
 
 test-coverage:
-		poetry run pytest --cov=page_analyzer --cov-report xml tests/
+		poetry run pytest --cov=page_analyzer --cov-report xml
 
-package-reinstall:
-		python3 -m pip install --force-reinstall dist/*.whl
-
-setup: install build package-install
+setup: install build
 
 selfcheck:
 	poetry check
