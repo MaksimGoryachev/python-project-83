@@ -9,3 +9,5 @@
 ## Instalation
 
 You must have python 3.12 and newer, poetry and postgresql installed to work properly
+___
+
