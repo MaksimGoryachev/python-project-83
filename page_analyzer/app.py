@@ -13,10 +13,9 @@ from flask import (
 load_dotenv()
 DATABASE_URL = os.getenv('DATABASE_URL')
 conn = psycopg2.connect(DATABASE_URL)
-app.secret_key = os.getenv('SECRET_KEY')
 
 app = Flask(__name__)
-
+app.secret_key = os.getenv('SECRET_KEY')
 
 @app.route('/')
 def index():
