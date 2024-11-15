@@ -1,4 +1,5 @@
 import os
+import psycopg2
 from dotenv import load_dotenv
 from flask import (
     Flask,
@@ -10,9 +11,11 @@ from flask import (
 
 
 load_dotenv()
-app = Flask(__name__)
-
+DATABASE_URL = os.getenv('DATABASE_URL')
+conn = psycopg2.connect(DATABASE_URL)
 app.secret_key = os.getenv('SECRET_KEY')
+
+app = Flask(__name__)
 
 
 @app.route('/')
