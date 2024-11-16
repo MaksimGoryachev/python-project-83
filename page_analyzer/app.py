@@ -11,10 +11,11 @@ from flask import (
 
 
 load_dotenv()
-DATABASE_URL = os.getenv('DATABASE_URL')
-conn = psycopg2.connect(DATABASE_URL)
+
 app = Flask(__name__)
 app.secret_key = os.getenv('SECRET_KEY')
+DATABASE_URL = os.getenv('DATABASE_URL')
+conn = psycopg2.connect(DATABASE_URL)
 
 
 @app.route('/')
@@ -25,8 +26,8 @@ def index():
 
 @app.route('/urls')
 def urls():
-    return render_template('indeex.html')
+    return render_template('index.html')
 
 
 if __name__ == '__main__':
-    app.run()
+    app.run(debug=True)  # debug=True  на время отладки
