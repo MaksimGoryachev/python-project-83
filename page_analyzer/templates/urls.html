@@ -1,6 +1,22 @@
 {% extends "index.html" %}
-
-<body>
-
-</body>
-</html>
+{% block body %}
+    {% if errors %}
+        {% for error in errors %}
+            <div class="alert alert-danger" role="alert">{{ error }}</div>
+        {% endfor %}
+    {% endif %}
+    <main class="flex-grow-1">
+        <div class="container-lg mt-3">
+            <div class="row">
+                <div class="col-12 bg-primary col-md-10 col-lg-8 mx-auto border rounded-3 p-5">
+                    <h1 class="display-3">Анализатор страниц</h1>
+                    <p class="lead">Бесплатно проверяйте сайты на SEO пригодность</p>
+                    <form class="d-flex justify-content-center" action="/urls" method="post">
+                        <input class="form-control form-control-lg" type="text" required name="url" placeholder="https://www.example.com" value="{{ url_from_request }}">
+                        <input class="btn btn-warning btn-lg ms-3 px-5 text-uppercase" type="submit" value="Проверить" >
+                    </form>
+                </div>
+            </div>
+        </div>
+    </main>
+{% endblock %}

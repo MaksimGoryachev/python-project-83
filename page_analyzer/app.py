@@ -20,12 +20,12 @@ app.secret_key = os.getenv('SECRET_KEY')
 @app.route('/')
 def index():
     """Return the main page."""
-    return render_template('index.html')
+    return render_template('urls.html')
 
 
 @app.route('/urls')
 def urls():
-    return 'URLS'
+    return render_template('indeex.html')
 
 
 if __name__ == '__main__':
