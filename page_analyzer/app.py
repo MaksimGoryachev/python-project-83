@@ -1,4 +1,5 @@
 import os
+# from urllib.parse import urlparse
 import psycopg2
 from dotenv import load_dotenv
 from flask import (
@@ -9,6 +10,7 @@ from flask import (
     # url_for,
 )
 
+# from validators.url import url
 
 load_dotenv()
 
@@ -31,12 +33,12 @@ def index():
 
 
 @app.get('/urls')
-def urls():
+def urls_get():
     return render_template('urls.html')
 
 
 @app.get('/urls/<int:url_id>')
-def url(url_id):
+def url_id_get(url_id):
     return render_template('url.html')
 
 
