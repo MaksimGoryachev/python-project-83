@@ -18,12 +18,12 @@ app = Flask(__name__)
 app.secret_key = os.getenv('SECRET_KEY')
 DATABASE_URL = os.getenv('DATABASE_URL')
 
-conn = psycopg2.connect(DATABASE_URL)
+# conn = psycopg2.connect(DATABASE_URL)
 
-# try:
-#     conn = psycopg2.connect(DATABASE_URL)
-# except Exception as e:
-#     print(f"Ошибка подключения к базе данных: {e}")
+try:
+    conn = psycopg2.connect(DATABASE_URL)
+except Exception as e:
+    print(f"Ошибка подключения к базе данных: {e}")
 
 
 @app.route('/')
@@ -33,12 +33,12 @@ def index():
 
 
 @app.get('/urls')
-def urls_get():
+def urls():
     return render_template('urls.html')
 
 
 @app.get('/urls/<int:url_id>')
-def url_id_get(url_id):
+def url(url_id):
     return render_template('url.html')
 
 
