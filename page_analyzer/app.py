@@ -1,6 +1,6 @@
 import os
 # from urllib.parse import urlparse
-import psycopg2
+# import psycopg2
 from dotenv import load_dotenv
 from flask import (
     Flask,
@@ -43,7 +43,7 @@ def url(url_id):
 
 
 def validate(url_from_request: str) -> list:
-    result =[]
+    result = []
     if not url_from_request:
         result.append('URL обязателен')
     if not url(url_from_request) or len(url_from_request) > 255:
