@@ -22,7 +22,6 @@ app.secret_key = os.getenv('SECRET_KEY')
 DATABASE_URL = os.getenv('DATABASE_URL1')
 print(DATABASE_URL)
 
-
 try:
     conn = psycopg2.connect(DATABASE_URL)
 except Exception as e:
