@@ -14,7 +14,7 @@ import requests
 from bs4 import BeautifulSoup
 import validators
 
-TIMEOUT = 1
+TIMEOUT = 0.1
 load_dotenv()
 
 app = Flask(__name__)
@@ -22,7 +22,6 @@ app.secret_key = os.getenv('SECRET_KEY')
 DATABASE_URL = os.getenv('DATABASE_URL1')
 print(DATABASE_URL)
 
-# conn = psycopg2.connect(DATABASE_URL)
 
 try:
     conn = psycopg2.connect(DATABASE_URL)
