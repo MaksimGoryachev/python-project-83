@@ -1,18 +1,25 @@
 import os
-from urllib.parse import urlparse
-import psycopg2
 import logging
 from dotenv import load_dotenv
 from flask import (
     Flask,
     render_template,
-    # request,
-    # redirect,
-    # url_for,
+    request,
+    redirect,
+    url_for,
+    flash,
+    get_flashed_messages
 )
 import requests
-from bs4 import BeautifulSoup
 import validators
+from page_analyzer.database import (
+    get_all_urls,
+    create_url_check,
+    get_data_checks,
+    create_new_url,
+    get_one_url,
+)
+
 
 TIMEOUT = 0.1
 load_dotenv()
@@ -20,12 +27,6 @@ load_dotenv()
 app = Flask(__name__)
 app.secret_key = os.getenv('SECRET_KEY')
 DATABASE_URL = os.getenv('DATABASE_URL1')
-print(DATABASE_URL)
-
-try:
-    conn = psycopg2.connect(DATABASE_URL)
-except Exception as e:
-    print(f"Ошибка подключения к базе данных: {e}")
 
 logging.basicConfig(
     level=logging.INFO,  # Уровень логирования
@@ -39,21 +40,68 @@ logging.basicConfig(
 
 @app.route('/')
 def index():
-    """Return the main page."""
+    """Возвращает главную страницу."""
     return render_template('base.html')
 
 
 @app.get('/urls')
-def urls():
-    return render_template('urls.html')
+def get_urls():
+    """Возвращает страницу со списком всех сайтов."""
+    urls = get_all_urls()
+    return render_template('urls.html', urls=urls)
 
 
 @app.get('/urls/<int:url_id>')
-def url(url_id):
-    return render_template('url.html')
+def get_url_id(url_id):
+    """Возвращает страницу с полной информацией."""
+    url_data = get_one_url(url_id)
+    if url_data is None:
+        return 'Страница не найдена!', 404
+    messages = get_flashed_messages(with_categories=True)
+    checks_url = get_data_checks(url_id)
+    return render_template(
+        'url.html',
+        checks_url=checks_url,
+        url=url_data,
+        messages=messages
+    )
+
+
+@app.post('/urls')
+def add_url():
+    """Добавление новой страницы."""
+    url_from_request = request.form.get('url', '')
+    errors = validate(url_from_request)
+    url_id = create_new_url(url_from_request) if not errors else 0
+
+    if errors:
+        return render_template(
+            'base.html',
+            url_from_request=url_from_request,
+            errors=errors
+        ), 422
+
+    if url_id is None:
+        errors.append('Ошибка сохранения в базу')
+        return render_template(
+            'base.html',
+            url_from_request=url_from_request,
+            errors=errors
+        ), 422
+
+    flash('Страница успешно добавлена', 'success')
+    return redirect(url_for('url_id', url_id=url_id))
+
+
+@app.post('/urls/<int:url_id>/checks')
+def check_url(url_id):
+    """Проверка статуса страницы."""
+    create_url_check(url_id)
+    return redirect(url_for('url_id', url_id=url_id))
 
 
 def validate(url_from_request: str) -> list:
+    """Валидация URL."""
     result = []
     if not url_from_request:
         result.append('URL обязателен')
@@ -64,12 +112,8 @@ def validate(url_from_request: str) -> list:
     return result
 
 
-def get_scheme_hostname(valid_url):
-    parsed_url = urlparse(valid_url)
-    return f'{parsed_url.scheme}:// {parsed_url.netloc}'
-
-
 def get_response(url):
+    """Отправляем запрос на сайт и получаем ответ."""
     try:
         response = requests.get(url, timeout=TIMEOUT, allow_redirects=False)
         response.raise_for_status()
@@ -79,25 +123,6 @@ def get_response(url):
 
     logging.info('The response from the site was received')
     return response
-
-
-def get_tag_content(response):
-    status_code = response.status_code
-    soup = BeautifulSoup(response.text, 'html.parser')
-
-    h1_tag = soup.find('h1')
-    h1 = h1_tag.text.strip() if h1_tag else ''
-    logging.info(f'H1 tag content: "{h1}"')
-
-    title_tag = soup.find('title')
-    title = title_tag.text.strip() if title_tag else ''
-    logging.info(f'H1 tag content: "{h1}"')
-
-    description_tag = soup.find('meta', attrs={'name': 'description'})
-    description = description_tag['content'].strip() if description_tag else ''
-    logging.info(f'H1 tag content: "{h1}"')
-
-    return status_code, h1, title, description
 
 
 if __name__ == '__main__':
