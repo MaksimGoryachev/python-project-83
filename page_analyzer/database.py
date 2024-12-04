@@ -8,7 +8,6 @@ from dotenv import load_dotenv
 from bs4 import BeautifulSoup
 
 
-
 load_dotenv()
 
 DATABASE_URL = os.getenv('DATABASE_URL1')
