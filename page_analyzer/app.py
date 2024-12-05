@@ -10,7 +10,6 @@ from flask import (
     flash,
     get_flashed_messages
 )
-import requests
 import validators
 from page_analyzer.database import (
     get_all_urls,
@@ -21,7 +20,6 @@ from page_analyzer.database import (
 )
 
 
-TIMEOUT = 0.1
 load_dotenv()
 
 app = Flask(__name__)
@@ -90,14 +88,14 @@ def add_url():
         ), 422
 
     flash('Страница успешно добавлена', 'success')
-    return redirect(url_for('url_id', url_id=url_id))
+    return redirect(url_for('get_url_id', url_id=url_id))
 
 
 @app.post('/urls/<int:url_id>/checks')
 def check_url(url_id):
     """Проверка статуса страницы."""
     create_url_check(url_id)
-    return redirect(url_for('url_id', url_id=url_id))
+    return redirect(url_for('get_url_id', url_id=url_id))
 
 
 def validate(url_from_request: str) -> list:
@@ -110,19 +108,6 @@ def validate(url_from_request: str) -> list:
     elif not validators.url(url_from_request):
         result.append('Некорректный URL')
     return result
-
-
-def get_response(url):
-    """Отправляем запрос на сайт и получаем ответ."""
-    try:
-        response = requests.get(url, timeout=TIMEOUT, allow_redirects=False)
-        response.raise_for_status()
-    except requests.RequestException:
-        logging.exception('Error when requesting the site')
-        raise
-
-    logging.info('The response from the site was received')
-    return response
 
 
 if __name__ == '__main__':

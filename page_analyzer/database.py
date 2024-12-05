@@ -6,11 +6,12 @@ import psycopg2
 from flask import flash
 from dotenv import load_dotenv
 from bs4 import BeautifulSoup
-
+import requests
 
 load_dotenv()
 
 DATABASE_URL = os.getenv('DATABASE_URL1')
+TIMEOUT = 5
 
 
 def get_connection():
@@ -42,24 +43,25 @@ def create_url_check(url_id: int):
         with get_connection() as conn:
             with conn.cursor() as cursor:
                 cursor.execute(query_check, (url_id,))
-                result = cursor.fetchone()
-                if not result:
+                name = cursor.fetchone()[0]
+                if not name:
                     flash('URL не найден', 'danger')
                     return None
 
-                name = result[0]
-                status_code, h1, title, description = get_tag_content(name)
+                r_by_name = get_response(name)
+                status_code, h1, title, description = get_tag_content(r_by_name)
                 params = (url_id,
                           status_code,
                           h1,
                           title,
                           description,
-                          datetime.now())
+                          datetime.now().date())
                 cursor.execute(query_insert, params)
                 flash('Страница успешно проверена', 'success')
                 close_connection(conn)
     except psycopg2.Error as e:
         flash(f'Произошла ошибка при проверке:{e}', 'danger')
+        return None
 
 
 def get_scheme_hostname(valid_url):
@@ -70,7 +72,7 @@ def get_scheme_hostname(valid_url):
 
 def create_new_url(url_to_save: str) -> int | None:
     """Создает новую запись в таблице urls и возвращает её ID."""
-    created_at = datetime.now()
+    created_at = datetime.now().date()
     name = get_scheme_hostname(url_to_save)
 
     query_check = 'SELECT id FROM urls WHERE name = %s LIMIT 1'
@@ -84,7 +86,7 @@ def create_new_url(url_to_save: str) -> int | None:
                 existing_url = cursor.fetchone()
                 if existing_url:
                     flash('Страница уже существует', 'info')
-                    close_connection(conn)
+                    # close_connection(conn)
                     return existing_url[0]
 
                 cursor.execute(query_insert, (name, created_at))
@@ -183,6 +185,19 @@ def get_data_checks(url_id):
     except psycopg2.Error as e:
         flash(f'Ошибка при получении данных: {e}', 'error')
         return None
+
+
+def get_response(url):
+    """Отправляем запрос на сайт и получаем ответ."""
+    try:
+        response = requests.get(url, timeout=TIMEOUT, allow_redirects=False)
+        response.raise_for_status()
+    except requests.RequestException:
+        logging.exception('Ошибка при выполнении запроса к сайту')
+        raise
+
+    logging.info('Ответ от сайта получен')
+    return response
 
 
 def get_tag_content(response):
