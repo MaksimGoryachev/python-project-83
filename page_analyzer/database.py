@@ -10,7 +10,7 @@ import requests
 
 load_dotenv()
 
-DATABASE_URL = os.getenv('DATABASE_URL1')
+DATABASE_URL = os.getenv('DATABASE_URL')
 TIMEOUT = 15
 logging.basicConfig(
     level=logging.INFO,  # Уровень логирования
