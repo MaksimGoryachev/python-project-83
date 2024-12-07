@@ -11,7 +11,15 @@ import requests
 load_dotenv()
 
 DATABASE_URL = os.getenv('DATABASE_URL1')
-TIMEOUT = 5
+TIMEOUT = 15
+logging.basicConfig(
+    level=logging.INFO,  # Уровень логирования
+    format='%(asctime)s - %(levelname)s - %(message)s',  # Формат сообщения
+    handlers=[
+        logging.FileHandler("app1.log"),  # Запись в файл
+        logging.StreamHandler()  # Вывод в консоль
+    ]
+)
 
 
 def get_connection():
@@ -43,13 +51,24 @@ def create_url_check(url_id: int):
         with get_connection() as conn:
             with conn.cursor() as cursor:
                 cursor.execute(query_check, (url_id,))
-                name = cursor.fetchone()[0]
-                if not name:
+                result = cursor.fetchone()
+                if not result:
                     flash('URL не найден', 'danger')
                     return None
 
-                r_by_name = get_response(name)
-                status_code, h1, title, description = get_tag_content(r_by_name)
+                name = result[0]
+
+                try:
+                    resp = get_response(name)
+                    status_code = resp.status_code
+                except Exception:
+                    status_code = None
+
+                if status_code == 200:
+                    h1, title, description = get_tag_content(resp)
+                else:
+                    h1, title, description = None, None, None
+
                 params = (url_id,
                           status_code,
                           h1,
@@ -58,9 +77,9 @@ def create_url_check(url_id: int):
                           datetime.now().date())
                 cursor.execute(query_insert, params)
                 flash('Страница успешно проверена', 'success')
-                close_connection(conn)
+                conn.commit()
     except psycopg2.Error as e:
-        flash(f'Произошла ошибка при проверке:{e}', 'danger')
+        flash(f'Произошла ошибка при проверке: {e}', 'danger')
         return None
 
 
@@ -86,14 +105,13 @@ def create_new_url(url_to_save: str) -> int | None:
                 existing_url = cursor.fetchone()
                 if existing_url:
                     flash('Страница уже существует', 'info')
-                    # close_connection(conn)
                     return existing_url[0]
 
                 cursor.execute(query_insert, (name, created_at))
                 new_url_id = cursor.fetchone()
-                if new_url_id is not None:
+                conn.commit()
+                if new_url_id:
                     flash('Страница успешно добавлена', 'success')
-                    close_connection(conn)
                     return new_url_id[0]
     except psycopg2.Error as e:
         flash(f'Ошибка при добавлении страницы: {e}', 'error')
@@ -190,20 +208,19 @@ def get_data_checks(url_id):
 def get_response(url):
     """Отправляем запрос на сайт и получаем ответ."""
     try:
-        response = requests.get(url, timeout=TIMEOUT, allow_redirects=False)
-        response.raise_for_status()
+        resp = requests.get(url, timeout=TIMEOUT, allow_redirects=False)
+        resp.raise_for_status()
     except requests.RequestException:
         logging.exception('Ошибка при выполнении запроса к сайту')
         raise
 
     logging.info('Ответ от сайта получен')
-    return response
+    return resp
 
 
-def get_tag_content(response):
-    """Получает статус, контент тега H1, заголовка страницы и описания."""
-    status_code = response.status_code
-    soup = BeautifulSoup(response.text, 'html.parser')
+def get_tag_content(resp):
+    """Получает контент тега H1, заголовка страницы и описания."""
+    soup = BeautifulSoup(resp.text, 'html.parser')
 
     h1_tag = soup.find('h1')
     h1 = h1_tag.text.strip() if h1_tag else ''
@@ -217,4 +234,4 @@ def get_tag_content(response):
     description = description_tag['content'].strip() if description_tag else ''
     logging.info(f'Description tag content: "{description}"')
 
-    return status_code, h1, title, description
+    return h1, title, description

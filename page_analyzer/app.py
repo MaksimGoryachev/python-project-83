@@ -7,7 +7,6 @@ from flask import (
     request,
     redirect,
     url_for,
-    flash,
     get_flashed_messages
 )
 import validators
@@ -69,8 +68,7 @@ def get_url_id(url_id):
 def add_url():
     """Добавление новой страницы."""
     url_from_request = request.form.get('url', '')
-    errors = validate(url_from_request)
-    url_id = create_new_url(url_from_request) if not errors else 0
+    errors = not_validate(url_from_request)
 
     if errors:
         return render_template(
@@ -78,6 +76,7 @@ def add_url():
             url_from_request=url_from_request,
             errors=errors
         ), 422
+    url_id = create_new_url(url_from_request)
 
     if url_id is None:
         errors.append('Ошибка сохранения в базу')
@@ -86,8 +85,6 @@ def add_url():
             url_from_request=url_from_request,
             errors=errors
         ), 422
-
-    flash('Страница успешно добавлена', 'success')
     return redirect(url_for('get_url_id', url_id=url_id))
 
 
@@ -98,13 +95,11 @@ def check_url(url_id):
     return redirect(url_for('get_url_id', url_id=url_id))
 
 
-def validate(url_from_request: str) -> list:
+def not_validate(url_from_request: str) -> list:
     """Валидация URL."""
     result = []
-    if not url_from_request:
-        result.append('URL обязателен')
-    elif len(url_from_request) > 255:
-        result.append('URL не должен быть длиннее 255 символов')
+    if len(url_from_request) > 255:
+        result.append('URL превышает 255 символов')
     elif not validators.url(url_from_request):
         result.append('Некорректный URL')
     return result
