@@ -7,7 +7,9 @@ from flask import (
     request,
     redirect,
     url_for,
-    get_flashed_messages, flash
+    get_flashed_messages,
+    flash,
+    abort
 )
 import validators
 from page_analyzer.database import (
@@ -52,16 +54,18 @@ def get_urls():
 def get_url_id(url_id):
     """Возвращает страницу с полной информацией."""
     url_data = get_one_url(url_id)
-    if url_data is None:
-        return 'Страница не найдена!', 404
-    messages = get_flashed_messages(with_categories=True)
-    checks_url = get_data_checks(url_id)
-    return render_template(
-        'url.html',
-        checks_url=checks_url,
-        url=url_data,
-        messages=messages
-    )
+    try:
+        if url_data is None:
+            abort(404)
+        checks_url = get_data_checks(url_id)
+        return render_template(
+            'url.html',
+            checks_url=checks_url,
+            url=url_data
+        )
+    except Exception as e:
+        logging.exception(f'Произошла ошибка при получении данных URL:{e}')
+        abort(500)
 
 
 @app.post('/urls')
@@ -73,18 +77,15 @@ def add_url():
     if errors:
         return render_template(
             'base.html',
-            url_from_request=url_from_request,
-            # errors=errors
+            url_from_request=url_from_request
         ), 422
     url_id = create_new_url(url_from_request)
 
     if url_id is None:
-        # errors.append('Ошибка сохранения в базу')
         flash('Ошибка сохранения в базу', 'danger')
         return render_template(
             'base.html',
             url_from_request=url_from_request,
-            # errors=errors
         ), 422
     return redirect(url_for('get_url_id', url_id=url_id))
 
@@ -96,16 +97,27 @@ def check_url(url_id):
     return redirect(url_for('get_url_id', url_id=url_id))
 
 
+@app.errorhandler(404)
+def page_not_found(error):
+    """Обработчик ошибки 404."""
+    logging.exception(error)
+    return render_template('404.html'), 404
+
+
+@app.errorhandler(500)
+def server_error(error):
+    """Обработчик ошибки 500."""
+    logging.exception(error)
+    return render_template('500.html'), 500
+
+
 def not_validate(url_from_request: str) -> list:
     """Валидация URL."""
-    result = []
     if len(url_from_request) > 255:
-        result.append('URL превышает 255 символов')
         flash('URL превышает 255 символов', 'danger')
     elif not validators.url(url_from_request):
-        result.append('Некорректный URL')
         flash('Некорректный URL', 'danger')
-    return get_flashed_messages(category_filter='danger')  # result
+    return get_flashed_messages(category_filter='danger')
 
 
 if __name__ == '__main__':

@@ -33,13 +33,6 @@ def get_connection():
         return None
 
 
-def close_connection(conn):
-    """Сохраняет и закрывает соединение с базой данных."""
-    if conn:
-        conn.commit()
-        conn.close()
-
-
 def create_url_check(url_id: int):
     """Создает запись в таблице url_checks."""
     query_check = 'SELECT name FROM urls WHERE id = %s LIMIT 1'
@@ -225,14 +218,14 @@ def get_tag_content(resp):
 
     h1_tag = soup.find('h1')
     h1 = h1_tag.text.strip() if h1_tag else ''
-    logging.info(f'H1 tag content: "{h1}"')
+    logging.info(f'Содержимое тега H1: "{h1}"')
 
     title_tag = soup.find('title')
     title = title_tag.text.strip() if title_tag else ''
-    logging.info(f'Title tag content: "{title}"')
+    logging.info(f'Содержимое тега Title: "{title}"')
 
     description_tag = soup.find('meta', attrs={'name': 'description'})
     description = description_tag['content'].strip() if description_tag else ''
-    logging.info(f'Description tag content: "{description}"')
+    logging.info(f'Содержимое тега Description: "{description}"')
 
     return h1, title, description
