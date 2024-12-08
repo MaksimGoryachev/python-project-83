@@ -29,6 +29,7 @@ def get_connection():
         return conn
     except Exception as e:
         print(f"Ошибка подключения к базе данных: {e}")
+        flash(f"Ошибка подключения к базе данных: {e}", 'danger')
         return None
 
 
@@ -114,7 +115,7 @@ def create_new_url(url_to_save: str) -> int | None:
                     flash('Страница успешно добавлена', 'success')
                     return new_url_id[0]
     except psycopg2.Error as e:
-        flash(f'Ошибка при добавлении страницы: {e}', 'error')
+        flash(f'Ошибка при добавлении страницы: {e}', 'danger')
         logging.error(f'Ошибка при сохранении URL: {e}')
         return None
 
@@ -138,7 +139,7 @@ def get_one_url(url_id):
                     }
         return url_data
     except psycopg2.Error as e:
-        flash(f'Ошибка при получении данных страницы: {e}', 'error')
+        flash(f'Ошибка при получении данных страницы: {e}', 'danger')
         return None
 
 
@@ -171,7 +172,7 @@ def get_all_urls() -> list:
                     return urls
         return None
     except psycopg2.Error as e:
-        flash(f'Ошибка при получении страниц: {e}', 'error')
+        flash(f'Ошибка при получении страниц: {e}', 'danger')
         return None
 
 
@@ -201,7 +202,7 @@ def get_data_checks(url_id):
                 return checks_data
         return None
     except psycopg2.Error as e:
-        flash(f'Ошибка при получении данных: {e}', 'error')
+        flash(f'Ошибка при получении данных: {e}', 'dander')
         return None
 
 

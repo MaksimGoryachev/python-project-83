@@ -18,7 +18,7 @@
         </nav>
     </header>
     <div>
-        {% set message_categories={'success': 'alert-success', 'error': 'alert-danger', 'info': 'alert-info'} %}
+        {% set message_categories={'success': 'alert-success', 'danger': 'alert-danger', 'info': 'alert-info'} %}
         {% for category, alert_class in message_categories.items() %}
             {% with messages = get_flashed_messages(category_filter=[category]) %}
             {% if messages %}
