@@ -7,7 +7,7 @@ from flask import (
     request,
     redirect,
     url_for,
-    get_flashed_messages
+    get_flashed_messages, flash
 )
 import validators
 from page_analyzer.database import (
@@ -74,16 +74,17 @@ def add_url():
         return render_template(
             'base.html',
             url_from_request=url_from_request,
-            errors=errors
+            # errors=errors
         ), 422
     url_id = create_new_url(url_from_request)
 
     if url_id is None:
-        errors.append('Ошибка сохранения в базу')
+        # errors.append('Ошибка сохранения в базу')
+        flash('Ошибка сохранения в базу', 'danger')
         return render_template(
             'base.html',
             url_from_request=url_from_request,
-            errors=errors
+            # errors=errors
         ), 422
     return redirect(url_for('get_url_id', url_id=url_id))
 
@@ -100,9 +101,11 @@ def not_validate(url_from_request: str) -> list:
     result = []
     if len(url_from_request) > 255:
         result.append('URL превышает 255 символов')
+        flash('URL превышает 255 символов', 'danger')
     elif not validators.url(url_from_request):
         result.append('Некорректный URL')
-    return result
+        flash('Некорректный URL', 'danger')
+    return get_flashed_messages(category_filter='danger')  # result
 
 
 if __name__ == '__main__':
