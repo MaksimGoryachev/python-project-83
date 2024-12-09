@@ -109,7 +109,7 @@ def create_new_url(url_to_save: str) -> int | None:
                     return new_url_id[0]
     except psycopg2.Error as e:
         flash(f'Ошибка при добавлении страницы: {e}', 'danger')
-        logging.error(f'Ошибка при сохранении URL: {e}')
+        logging.error('Ошибка при сохранении URL: "%s"',e)
         return None
 
 
@@ -218,14 +218,14 @@ def get_tag_content(resp):
 
     h1_tag = soup.find('h1')
     h1 = h1_tag.text.strip() if h1_tag else ''
-    logging.info(f'Содержимое тега H1: "{h1}"')
+    logging.info('Содержимое тега H1: "%s"', h1)
 
     title_tag = soup.find('title')
     title = title_tag.text.strip() if title_tag else ''
-    logging.info(f'Содержимое тега Title: "{title}"')
+    logging.info('Содержимое тега Title: "%s"', title)
 
     description_tag = soup.find('meta', attrs={'name': 'description'})
     description = description_tag['content'].strip() if description_tag else ''
-    logging.info(f'Содержимое тега Description: "{description}"')
+    logging.info('Содержимое тега Description: "%s"', description)
 
     return h1, title, description

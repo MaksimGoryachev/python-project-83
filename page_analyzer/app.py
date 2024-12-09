@@ -24,8 +24,8 @@ from page_analyzer.database import (
 load_dotenv()
 
 app = Flask(__name__)
-app.secret_key = os.getenv('SECRET_KEY')
-DATABASE_URL = os.getenv('DATABASE_URL1')
+app.config['SECRET_KEY'] = os.getenv('SECRET_KEY')
+DATABASE_URL = os.getenv('DATABASE_URL')
 
 logging.basicConfig(
     level=logging.INFO,  # Уровень логирования
@@ -64,7 +64,7 @@ def get_url_id(url_id):
             url=url_data
         )
     except Exception as e:
-        logging.exception(f'Произошла ошибка при получении данных URL:{e}')
+        logging.exception('Произошла ошибка при получении данных URL: "%s"',e)
         abort(500)
 
 
