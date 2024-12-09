@@ -1,25 +1,19 @@
 import logging
 import os
 
-
 import validators
 from dotenv import load_dotenv
 from flask import (Flask, abort, flash, get_flashed_messages, redirect,
                    render_template, request, url_for)
 
-
 from page_analyzer.database import (create_new_url, create_url_check,
                                     get_all_urls, get_data_checks, get_one_url)
-
 
 load_dotenv()
 app = Flask(__name__)
 
-
 app.config['SECRET_KEY'] = os.getenv('SECRET_KEY')
 DATABASE_URL = os.getenv('DATABASE_URL')
-
-
 logging.basicConfig(
     level=logging.INFO,  # Уровень логирования
     format='%(asctime)s - %(levelname)s - %(message)s',  # Формат сообщения

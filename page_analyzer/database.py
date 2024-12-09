@@ -62,7 +62,7 @@ def create_url_check(url_id: int):
                 if status_code == 200:
                     h1, title, description = get_tag_content(resp)
                 else:
-                    h1, title, description = None, None, None
+                    status_code, h1, title, description = None, None, None, None
 
                 params = (url_id,
                           status_code,
