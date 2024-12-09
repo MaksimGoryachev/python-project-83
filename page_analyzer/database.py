@@ -1,12 +1,13 @@
-import os
 import logging
-from urllib.parse import urlparse
+import os
 from datetime import datetime
+from urllib.parse import urlparse
+
 import psycopg2
-from flask import flash
-from dotenv import load_dotenv
-from bs4 import BeautifulSoup
 import requests
+from bs4 import BeautifulSoup
+from dotenv import load_dotenv
+from flask import flash
 
 load_dotenv()
 
