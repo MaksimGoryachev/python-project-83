@@ -1,5 +1,5 @@
-import os
 import logging
+import os
 from dotenv import load_dotenv
 from flask import (
     Flask,
@@ -121,4 +121,4 @@ def not_validate(url_from_request: str) -> list:
 
 
 if __name__ == '__main__':
-    app.run(debug=True)  # debug=True  на время отладки
+    app.run()
