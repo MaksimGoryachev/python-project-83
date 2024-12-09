@@ -64,7 +64,7 @@ def get_url_id(url_id):
             url=url_data
         )
     except Exception as e:
-        logging.exception('Произошла ошибка при получении данных URL: "%s"',e)
+        logging.exception('Произошла ошибка при получении данных URL: "%s"', e)
         abort(500)
 
 
