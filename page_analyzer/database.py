@@ -205,8 +205,11 @@ def get_response(url):
     try:
         response = requests.get(url, timeout=TIMEOUT, allow_redirects=False)
         response.raise_for_status()
-    except requests.RequestException:
-        logging.exception('Ошибка при выполнении запроса к сайту')
+    except requests.HTTPError as http_err:
+        logging.error(f'HTTP ошибка: {http_err.response.status_code} - {http_err.response.text}')
+        raise
+    except requests.RequestException as req_err:
+        logging.exception('Ошибка при выполнении запроса к сайту: %s', req_err)
         raise
 
     logging.info('Ответ от сайта получен')
