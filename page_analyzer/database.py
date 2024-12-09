@@ -62,7 +62,7 @@ def create_url_check(url_id: int):
                 if status_code == 200:
                     h1, title, description = get_tag_content(resp)
                 else:
-                    status_code, h1, title, description = None, None, None, None
+                    h1, title, description = None, None, None
 
                 params = (url_id,
                           status_code,
@@ -204,10 +204,7 @@ def get_response(url):
     """Отправляем запрос на сайт и получаем ответ."""
     try:
         response = requests.get(url, timeout=TIMEOUT, allow_redirects=False)
-        response.raise_for_status()
-    except requests.HTTPError as http_err:
-        logging.error(f'HTTP ошибка: {http_err.response.status_code} - {http_err.response.text}')
-        raise
+        # response.raise_for_status()
     except requests.RequestException as req_err:
         logging.exception('Ошибка при выполнении запроса к сайту: %s', req_err)
         raise
