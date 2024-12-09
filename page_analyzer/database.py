@@ -203,14 +203,14 @@ def get_data_checks(url_id):
 def get_response(url):
     """Отправляем запрос на сайт и получаем ответ."""
     try:
-        resp = requests.get(url, timeout=TIMEOUT, allow_redirects=False)
-        resp.raise_for_status()
+        response = requests.get(url, timeout=TIMEOUT, allow_redirects=False)
+        response.raise_for_status()
     except requests.RequestException:
         logging.exception('Ошибка при выполнении запроса к сайту')
         raise
 
     logging.info('Ответ от сайта получен')
-    return resp
+    return response
 
 
 def get_tag_content(resp):

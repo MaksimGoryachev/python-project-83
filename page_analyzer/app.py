@@ -1,7 +1,7 @@
 import logging
 import os
-import validators
 
+import validators
 from dotenv import load_dotenv
 from flask import (Flask, abort, flash, get_flashed_messages, redirect,
                    render_template, request, url_for)
