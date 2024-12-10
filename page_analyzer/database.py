@@ -48,7 +48,7 @@ def create_url_check(url_id: int):
                 cursor.execute(query_check, (url_id,))
                 result = cursor.fetchone()
                 if not result:
-                    flash('URL не найден', 'danger')
+                    flash('Произошла ошибка при проверке', 'danger')
                     return None
 
                 name = result[0]
