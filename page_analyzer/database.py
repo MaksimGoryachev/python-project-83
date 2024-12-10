@@ -56,7 +56,8 @@ def create_url_check(url_id: int):
                 try:
                     resp = get_response(name)
                     status_code = resp.status_code
-                except Exception:
+                except psycopg2.Error as e:
+                    flash(f'Произошла ошибка при проверке: {e}', 'danger')
                     status_code = None
 
                 if status_code == 200:
