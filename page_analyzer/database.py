@@ -52,14 +52,12 @@ def create_url_check(url_id: int):
                     return None
 
                 name = result[0]
+                resp = get_response(name)
+                if resp is None:
+                    flash('Произошла ошибка при проверке', 'danger')
+                    return None
 
-                try:
-                    resp = get_response(name)
-                    status_code = resp.status_code
-                except psycopg2.Error as e:
-                    flash(f'Произошла ошибка при проверке: {e}', 'danger')
-                    status_code = None
-
+                status_code = resp.status_code
                 if status_code == 200:
                     h1, title, description = get_tag_content(resp)
                 else:
@@ -74,8 +72,9 @@ def create_url_check(url_id: int):
                 cursor.execute(query_insert, params)
                 flash('Страница успешно проверена', 'success')
                 conn.commit()
-    except psycopg2.Error as e:
-        flash(f'Произошла ошибка при проверке: {e}', 'danger')
+
+    except psycopg2.Error:
+        flash('Произошла ошибка при проверкe', 'danger')
         return None
 
 
@@ -205,7 +204,7 @@ def get_response(url):
     """Отправляем запрос на сайт и получаем ответ."""
     try:
         response = requests.get(url, timeout=TIMEOUT, allow_redirects=False)
-        # response.raise_for_status()
+        response.raise_for_status()
     except requests.RequestException as req_err:
         logging.exception('Ошибка при выполнении запроса к сайту: %s', req_err)
         raise
