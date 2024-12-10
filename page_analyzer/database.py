@@ -111,7 +111,7 @@ def create_new_url(url_to_save: str) -> int | None:
                     return new_url_id[0]
     except psycopg2.Error as e:
         flash(f'Ошибка при добавлении страницы: {e}', 'danger')
-        logging.error('Ошибка при сохранении URL: "%s"', e)
+        logging.error('Ошибка при добавлении страницы: "%s"', e)
         return None
 
 
