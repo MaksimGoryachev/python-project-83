@@ -15,11 +15,11 @@ app = Flask(__name__)
 app.config['SECRET_KEY'] = os.getenv('SECRET_KEY')
 DATABASE_URL = os.getenv('DATABASE_URL')
 logging.basicConfig(
-    level=logging.INFO,  # Уровень логирования
-    format='%(asctime)s - %(levelname)s - %(message)s',  # Формат сообщения
+    level=logging.INFO,
+    format='%(asctime)s - %(levelname)s - %(message)s',
     handlers=[
-        logging.FileHandler("app.log"),  # Запись в файл
-        logging.StreamHandler()  # Вывод в консоль
+        logging.FileHandler("app.log"),
+        logging.StreamHandler()
     ]
 )
 
@@ -74,7 +74,7 @@ def add_url():
             'base.html',
             url_from_request=url_from_request,
         ), 422
-    return redirect(url_for('get_url_id', url_id=url_id))
+    return redirect(url_for('get_url_id', url_id=url_id), 302)
 
 
 @app.post('/urls/<int:url_id>/checks')

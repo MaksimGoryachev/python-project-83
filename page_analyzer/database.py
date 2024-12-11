@@ -14,11 +14,11 @@ load_dotenv()
 DATABASE_URL = os.getenv('DATABASE_URL')
 TIMEOUT = 15
 logging.basicConfig(
-    level=logging.INFO,  # Уровень логирования
-    format='%(asctime)s - %(levelname)s - %(message)s',  # Формат сообщения
+    level=logging.INFO,
+    format='%(asctime)s - %(levelname)s - %(message)s',
     handlers=[
-        logging.FileHandler("app1.log"),  # Запись в файл
-        logging.StreamHandler()  # Вывод в консоль
+        logging.FileHandler("app1.log"),
+        logging.StreamHandler()
     ]
 )
 
@@ -49,22 +49,23 @@ def create_url_check(url_id: int):
                 result = cursor.fetchone()
                 if not result:
                     flash('Произошла ошибка при проверке', 'danger')
+                    logging.info('Не удалось получить данные по ID')
                     return None
 
                 name = result[0]
+                resp = get_response(name)  # type: ignore
+                if resp is None:
+                    flash('Произошла ошибка при проверке', 'danger')
+                    logging.info('На запрос не получен ответ: RequestException')
+                    return None
 
-                try:
-                    resp = get_response(name)
-                    status_code = resp.status_code
-                except psycopg2.Error as e:
-                    flash(f'Произошла ошибка при проверке: {e}', 'danger')
-                    status_code = None
+                status_code = resp.status_code
+                if status_code != 200:
+                    flash('Произошла ошибка при проверке', 'danger')
+                    logging.info('Код статуса не равен 200')
+                    return None
 
-                if status_code == 200:
-                    h1, title, description = get_tag_content(resp)
-                # else:
-                #     h1, title, description = None, None, None
-
+                h1, title, description = get_tag_content(resp)
                 params = (url_id,
                           status_code,
                           h1,
@@ -74,8 +75,10 @@ def create_url_check(url_id: int):
                 cursor.execute(query_insert, params)
                 flash('Страница успешно проверена', 'success')
                 conn.commit()
+
     except psycopg2.Error as e:
-        flash(f'Произошла ошибка при проверке: {e}', 'danger')
+        flash('Произошла ошибка при проверке', 'danger')
+        logging.info('Произошла ошибка при проверке "%s"', e)
         return None
 
 
@@ -207,8 +210,8 @@ def get_response(url):
         response = requests.get(url, timeout=TIMEOUT, allow_redirects=False)
         response.raise_for_status()
     except requests.RequestException as req_err:
-        logging.exception('Ошибка при выполнении запроса к сайту: %s', req_err)
-        raise
+        logging.info('Ошибка при выполнении запроса к сайту: %s', req_err)
+        return None
 
     logging.info('Ответ от сайта получен')
     return response
