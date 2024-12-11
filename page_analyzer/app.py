@@ -14,6 +14,7 @@ app = Flask(__name__)
 
 app.config['SECRET_KEY'] = os.getenv('SECRET_KEY')
 DATABASE_URL = os.getenv('DATABASE_URL')
+
 logging.basicConfig(
     level=logging.INFO,
     format='%(asctime)s - %(levelname)s - %(message)s',
@@ -59,7 +60,7 @@ def get_url_id(url_id):
 def add_url():
     """Добавление новой страницы."""
     url_from_request = request.form.get('url', '')
-    errors = not_validate(url_from_request)
+    errors = validate(url_from_request)
 
     if errors:
         return render_template(
@@ -98,7 +99,7 @@ def server_error(error):
     return render_template('500.html'), 500
 
 
-def not_validate(url_from_request: str) -> list:
+def validate(url_from_request: str) -> list:
     """Валидация URL."""
     if len(url_from_request) > 255:
         flash('URL превышает 255 символов', 'danger')
