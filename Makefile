@@ -14,6 +14,9 @@ build:
 lint:
 	poetry run flake8 page_analyzer
 
+ruff:
+	poetry run ruff check page_analyzer
+
 setup: install build
 
 selfcheck:
