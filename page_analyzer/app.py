@@ -12,7 +12,7 @@ from page_analyzer.database import (create_new_url, create_url_check,
 load_dotenv()
 app = Flask(__name__)
 
-app.config['SECRET_KEY'] = os.getenv('SECRET_KEY')
+app.secret_key = os.getenv('SECRET_KEY')
 DATABASE_URL = os.getenv('DATABASE_URL')
 
 logging.basicConfig(
