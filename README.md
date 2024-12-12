@@ -9,6 +9,7 @@
 [Page Analyzer](https://python-project-83-r9xq.onrender.com) is a website that analyzes specified pages for SEO suitability.
 
 ![demo GIF](page_analyzer/images/demo page_analyzer.gif)
+
 ---
 ## Instalation
 
@@ -40,5 +41,8 @@ Install the package `make setup`
 ## Start the app on the local dev server
 'make dev'
 
+---
 ## Start the app on the production server
 'make start'
+
+---
