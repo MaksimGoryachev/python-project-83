@@ -39,10 +39,10 @@ Install the package `make setup`
 ---
 
 ## Start the app on the local dev server
-'make dev'
+`make dev`
 
 ---
 ## Start the app on the production server
-'make start'
+`make start`
 
 ---
