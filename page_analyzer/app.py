@@ -26,7 +26,7 @@ load_dotenv()
 app = Flask(__name__)
 
 app.secret_key = os.getenv('SECRET_KEY')
-DATABASE_URL = os.getenv('DATABASE_URL')
+DATABASE_URL = os.getenv('DATABASE_URL1')
 
 logging.basicConfig(
     level=logging.INFO,
