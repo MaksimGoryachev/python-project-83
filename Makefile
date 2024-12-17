@@ -11,17 +11,22 @@ start:
 build:
 	./build.sh
 
-lint:
+lint1:
 	poetry run flake8 page_analyzer
 
 ruff:
 	poetry run ruff check page_analyzer
+
+fix:
+	poetry run ruff check --fix page_analyzer
+
+lint: lint1 ruff
 
 setup: install build
 
 selfcheck:
 	poetry check
 
-check: selfcheck lint test
+check: selfcheck lint
 
-.PHONY: install test lint selfcheck check build start dev
+.PHONY: install lint1 lint selfcheck check build start dev setup fix

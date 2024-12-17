@@ -26,7 +26,6 @@ load_dotenv()
 app = Flask(__name__)
 
 app.secret_key = os.getenv('SECRET_KEY')
-DATABASE_URL = os.getenv('DATABASE_URL1')
 
 logging.basicConfig(
     level=logging.INFO,
@@ -122,4 +121,4 @@ def validate(url_from_request: str) -> list:
 
 
 if __name__ == '__main__':
-    app.run()
+    app.run(debug=True)
