@@ -1,13 +1,11 @@
 import logging
 import os
 
-import validators
 from dotenv import load_dotenv
 from flask import (
     Flask,
     abort,
     flash,
-    get_flashed_messages,
     redirect,
     render_template,
     request,
@@ -22,6 +20,7 @@ from page_analyzer.database import (
     get_one_url,
 )
 from page_analyzer.logging_config import setup_logging
+from page_analyzer.tools import validate
 
 load_dotenv()
 app = Flask(__name__)
@@ -103,13 +102,13 @@ def server_error(error):
     return render_template('500.html'), 500
 
 
-def validate(url_from_request: str) -> list:
-    """Валидация URL."""
-    if len(url_from_request) > 255:
-        flash('URL превышает 255 символов', 'danger')
-    elif not validators.url(url_from_request):
-        flash('Некорректный URL', 'danger')
-    return get_flashed_messages(category_filter='danger')
+# def validate(url_from_request: str) -> list:
+#     """Валидация URL."""
+#     if len(url_from_request) > 255:
+#         flash('URL превышает 255 символов', 'danger')
+#     elif not validators.url(url_from_request):
+#         flash('Некорректный URL', 'danger')
+#     return get_flashed_messages(category_filter='danger')
 
 
 if __name__ == '__main__':

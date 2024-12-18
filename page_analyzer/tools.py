@@ -1,6 +1,11 @@
 import logging
 
+import validators
 from bs4 import BeautifulSoup
+from flask import (
+    flash,
+    get_flashed_messages,
+)
 
 
 def get_tag_content(resp):
@@ -20,3 +25,12 @@ def get_tag_content(resp):
     logging.info('Содержимое тега Description: "%s"', description)
 
     return h1, title, description
+
+
+def validate(url_from_request: str) -> list:
+    """Валидация URL."""
+    if len(url_from_request) > 255:
+        flash('URL превышает 255 символов', 'danger')
+    elif not validators.url(url_from_request):
+        flash('Некорректный URL', 'danger')
+    return get_flashed_messages(category_filter='danger')
