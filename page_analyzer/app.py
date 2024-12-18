@@ -102,15 +102,6 @@ def server_error(error):
     return render_template('500.html'), 500
 
 
-# def validate(url_from_request: str) -> list:
-#     """Валидация URL."""
-#     if len(url_from_request) > 255:
-#         flash('URL превышает 255 символов', 'danger')
-#     elif not validators.url(url_from_request):
-#         flash('Некорректный URL', 'danger')
-#     return get_flashed_messages(category_filter='danger')
-
-
 if __name__ == '__main__':
     setup_logging()
     logging.info("Приложение запущено")

@@ -1,11 +1,15 @@
 import logging
+from urllib.parse import urlparse
 
+import requests
 import validators
 from bs4 import BeautifulSoup
 from flask import (
     flash,
     get_flashed_messages,
 )
+
+TIMEOUT = 15
 
 
 def get_tag_content(resp):
@@ -34,3 +38,22 @@ def validate(url_from_request: str) -> list:
     elif not validators.url(url_from_request):
         flash('Некорректный URL', 'danger')
     return get_flashed_messages(category_filter='danger')
+
+
+def get_response(url):
+    """Отправляем запрос на сайт и получаем ответ."""
+    try:
+        response = requests.get(url, timeout=TIMEOUT, allow_redirects=False)
+        response.raise_for_status()
+    except requests.RequestException as req_err:
+        logging.info('Ошибка при выполнении запроса к сайту: %s', req_err)
+        return None
+
+    logging.info('Ответ от сайта получен')
+    return response
+
+
+def get_scheme_hostname(valid_url):
+    """Возвращает схему и хост из валидного URL."""
+    parsed_url = urlparse(valid_url)
+    return f'{parsed_url.scheme}://{parsed_url.netloc}'

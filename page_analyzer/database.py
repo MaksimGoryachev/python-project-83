@@ -1,19 +1,20 @@
 import logging
 import os
 from datetime import datetime
-from urllib.parse import urlparse
 
 import psycopg2
-import requests
 from dotenv import load_dotenv
 from flask import flash
 
-from page_analyzer.tools import get_tag_content
+from page_analyzer.tools import (
+    get_response,
+    get_scheme_hostname,
+    get_tag_content,
+)
 
 load_dotenv()
 
 DATABASE_URL = os.getenv('DATABASE_URL')
-TIMEOUT = 15
 
 
 def get_connection():
@@ -73,12 +74,6 @@ def create_url_check(url_id: int):
         flash('Произошла ошибка при проверке', 'danger')
         logging.info('Произошла ошибка при проверке "%s"', e)
         return None
-
-
-def get_scheme_hostname(valid_url):
-    """Возвращает схему и хост из валидного URL."""
-    parsed_url = urlparse(valid_url)
-    return f'{parsed_url.scheme}://{parsed_url.netloc}'
 
 
 def create_new_url(url_to_save: str) -> int | None:
@@ -195,16 +190,3 @@ def get_data_checks(url_id):
     except psycopg2.Error as e:
         flash(f'Ошибка при получении данных: {e}', 'dander')
         return None
-
-
-def get_response(url):
-    """Отправляем запрос на сайт и получаем ответ."""
-    try:
-        response = requests.get(url, timeout=TIMEOUT, allow_redirects=False)
-        response.raise_for_status()
-    except requests.RequestException as req_err:
-        logging.info('Ошибка при выполнении запроса к сайту: %s', req_err)
-        return None
-
-    logging.info('Ответ от сайта получен')
-    return response
