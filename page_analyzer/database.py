@@ -12,16 +12,8 @@ from page_analyzer.tools import get_tag_content
 
 load_dotenv()
 
-DATABASE_URL = os.getenv('DATABASE_URL1')
+DATABASE_URL = os.getenv('DATABASE_URL')
 TIMEOUT = 15
-logging.basicConfig(
-    level=logging.INFO,
-    format='%(asctime)s - %(levelname)s - %(message)s',
-    handlers=[
-        logging.FileHandler("app1.log"),
-        logging.StreamHandler()
-    ]
-)
 
 
 def get_connection():

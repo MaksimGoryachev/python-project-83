@@ -21,20 +21,12 @@ from page_analyzer.database import (
     get_data_checks,
     get_one_url,
 )
+from page_analyzer.logging_config import setup_logging
 
 load_dotenv()
 app = Flask(__name__)
 
 app.secret_key = os.getenv('SECRET_KEY')
-
-logging.basicConfig(
-    level=logging.INFO,
-    format='%(asctime)s - %(levelname)s - %(message)s',
-    handlers=[
-        logging.FileHandler("app.log"),
-        logging.StreamHandler()
-    ]
-)
 
 
 @app.route('/')
@@ -121,4 +113,6 @@ def validate(url_from_request: str) -> list:
 
 
 if __name__ == '__main__':
+    setup_logging()
+    logging.info("Приложение запущено")
     app.run(debug=True)

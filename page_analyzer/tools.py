@@ -2,15 +2,6 @@ import logging
 
 from bs4 import BeautifulSoup
 
-logging.basicConfig(
-    level=logging.INFO,
-    format='%(asctime)s - %(levelname)s - %(message)s',
-    handlers=[
-        logging.FileHandler("app1.log"),
-        logging.StreamHandler()
-    ]
-)
-
 
 def get_tag_content(resp):
     """Получает контент тега H1, заголовка страницы и описания."""
