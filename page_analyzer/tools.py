@@ -46,7 +46,7 @@ def get_response(url):
         response = requests.get(url, timeout=TIMEOUT, allow_redirects=False)
         response.raise_for_status()
     except requests.RequestException as req_err:
-        logging.info('Ошибка при выполнении запроса к сайту: %s', req_err)
+        logging.exception('Ошибка при выполнении запроса к сайту: %s', req_err)
         return None
 
     logging.info('Ответ от сайта получен')

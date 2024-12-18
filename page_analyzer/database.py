@@ -23,8 +23,7 @@ def get_connection():
         conn = psycopg2.connect(DATABASE_URL)
         return conn
     except Exception as e:
-        print(f"Ошибка подключения к базе данных: {e}")
-        flash(f"Ошибка подключения к базе данных: {e}", 'danger')
+        logging.exception('Произошла ошибка при создании соединения "%s"', e)
         return None
 
 
@@ -43,20 +42,20 @@ def create_url_check(url_id: int):
                 result = cursor.fetchone()
                 if not result:
                     flash('Произошла ошибка при проверке', 'danger')
-                    logging.info('Не удалось получить данные по ID')
+                    logging.error('Не удалось получить данные по ID')
                     return None
 
                 name = result[0]
                 resp = get_response(name)  # type: ignore
                 if resp is None:
                     flash('Произошла ошибка при проверке', 'danger')
-                    logging.info('На запрос не получен ответ: RequestException')
+                    logging.error('На запрос не получен ответ: RequestException')
                     return None
 
                 status_code = resp.status_code
                 if status_code != 200:
                     flash('Произошла ошибка при проверке', 'danger')
-                    logging.info('Код статуса не равен 200')
+                    logging.warning('Код статуса не равен 200')
                     return None
 
                 h1, title, description = get_tag_content(resp)
@@ -72,7 +71,7 @@ def create_url_check(url_id: int):
 
     except psycopg2.Error as e:
         flash('Произошла ошибка при проверке', 'danger')
-        logging.info('Произошла ошибка при проверке "%s"', e)
+        logging.exception('Произошла ошибка при проверке "%s"', e)
         return None
 
 
@@ -101,8 +100,7 @@ def create_new_url(url_to_save: str) -> int | None:
                     flash('Страница успешно добавлена', 'success')
                     return new_url_id[0]
     except psycopg2.Error as e:
-        flash(f'Ошибка при добавлении страницы: {e}', 'danger')
-        logging.error('Ошибка при добавлении страницы: "%s"', e)
+        logging.exception('Ошибка при добавлении страницы: "%s"', e)
         return None
 
 
