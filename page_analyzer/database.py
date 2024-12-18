@@ -49,7 +49,8 @@ def create_url_check(url_id: int):
                 resp = get_response(name)  # type: ignore
                 if resp is None:
                     flash('Произошла ошибка при проверке', 'danger')
-                    logging.error('На запрос не получен ответ: RequestException')
+                    logging.error('На запрос не получен ответ: '
+                                  'RequestException')
                     return None
 
                 status_code = resp.status_code
