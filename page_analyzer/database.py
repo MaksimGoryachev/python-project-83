@@ -143,16 +143,15 @@ def get_all_urls() -> list:
         with conn.cursor() as cursor:
             cursor.execute(query)
             rows = cursor.fetchall()
-            if rows is not None:
-                urls = [
-                    {
-                        'id': row[0],
-                        'name': row[1],
-                        'last_check_date': row[2] or '',
-                        'last_status_code': row[3] or ''
-                    }
-                    for row in rows
-                    ]
+            urls = [
+                {
+                    'id': row[0],
+                    'name': row[1],
+                    'last_check_date': row[2] or '',
+                    'last_status_code': row[3] or ''
+                }
+                for row in rows
+                ]
             return urls
 
 
