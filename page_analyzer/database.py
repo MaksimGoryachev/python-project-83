@@ -41,21 +41,18 @@ def create_url_check(url_id: int):
                 cursor.execute(query_check, (url_id,))
                 result = cursor.fetchone()
                 if not result:
-                    flash('Произошла ошибка при проверке', 'danger')
                     logging.error('Не удалось получить данные по ID')
                     return None
 
                 name = result[0]
                 resp = get_response(name)  # type: ignore
                 if resp is None:
-                    flash('Произошла ошибка при проверке', 'danger')
                     logging.error('На запрос не получен ответ: '
                                   'RequestException')
                     return None
 
                 status_code = resp.status_code
                 if status_code != 200:
-                    flash('Произошла ошибка при проверке', 'danger')
                     logging.warning('Код статуса не равен 200')
                     return None
 
@@ -67,11 +64,10 @@ def create_url_check(url_id: int):
                           description,
                           datetime.now().date())
                 cursor.execute(query_insert, params)
-                flash('Страница успешно проверена', 'success')
                 conn.commit()
+                return True
 
     except psycopg2.Error as e:
-        flash('Произошла ошибка при проверке', 'danger')
         logging.exception('Произошла ошибка при проверке "%s"', e)
         return None
 
