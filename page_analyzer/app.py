@@ -44,7 +44,7 @@ def get_urls():
     except psycopg2.errors as e:
         logging.exception('Произошла ошибка при получении списка URL: "%s"', e)
         flash(f'Ошибка при получении списка страниц: {e}', 'danger')
-        abort(500)
+        return render_template('urls.html', urls=[])
 
 
 @app.get('/urls/<int:url_id>')
