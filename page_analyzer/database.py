@@ -139,26 +139,21 @@ def get_all_urls() -> list:
     ORDER BY urls.id DESC, url_checks.created_at DESC;
     """
 
-    try:
-        with get_connection() as conn:
-            with conn.cursor() as cursor:
-                cursor.execute(query)
-                rows = cursor.fetchall()
-                if rows is not None:
-                    urls = [
-                        {
-                            'id': row[0],
-                            'name': row[1],
-                            'last_check_date': row[2] or '',
-                            'last_status_code': row[3] or ''
-                        }
-                        for row in rows
+    with get_connection() as conn:
+        with conn.cursor() as cursor:
+            cursor.execute(query)
+            rows = cursor.fetchall()
+            if rows is not None:
+                urls = [
+                    {
+                        'id': row[0],
+                        'name': row[1],
+                        'last_check_date': row[2] or '',
+                        'last_status_code': row[3] or ''
+                    }
+                    for row in rows
                     ]
-                    return urls
-        return None
-    except psycopg2.Error as e:
-        flash(f'Ошибка при получении страниц: {e}', 'danger')
-        return None
+            return urls
 
 
 def get_data_checks(url_id):
