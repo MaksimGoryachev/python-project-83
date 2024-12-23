@@ -93,7 +93,7 @@ def check_url(url_id):
     """Проверка статуса страницы."""
     result = create_url_check(url_id)
     if result is None:
-        flash('Прооизошла ошибка при проверке', 'danger')
+        flash('Произошла ошибка при проверке', 'danger')
     else:
         flash('Страница успешно проверена', 'success')
 
