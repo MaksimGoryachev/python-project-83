@@ -4,7 +4,6 @@ from datetime import datetime
 
 import psycopg2
 from dotenv import load_dotenv
-from flask import flash
 
 from page_analyzer.tools import (
     get_response,
@@ -130,7 +129,7 @@ def get_one_url(url_id):
                     }
         return url_data
     except psycopg2.Error as e:
-        flash(f'Ошибка при получении данных страницы: {e}', 'danger')
+        logging.exception('Ошибка при получении данных страницы: "%s"', e)
         return None
 
 
@@ -192,5 +191,6 @@ def get_data_checks(url_id):
                 return checks_data
         return None
     except psycopg2.Error as e:
-        flash(f'Ошибка при получении данных: {e}', 'dander')
+        logging.exception('Ошибка при получении данных'
+                          ' проверки страницы: "%s"', e)
         return None
