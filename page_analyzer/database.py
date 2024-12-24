@@ -160,6 +160,7 @@ def get_all_urls() -> list:
                     for row in rows
                     ]
                 return urls
+
     except psycopg2.Error as e:
         logging.exception('Произошла ошибка при получении списка URL: "%s"', e)
         return []

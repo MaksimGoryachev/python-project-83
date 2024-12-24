@@ -123,4 +123,4 @@ def server_error(error):
 if __name__ == '__main__':
     setup_logging()
     logging.info("Приложение запущено")
-    app.run(debug=True)
+    app.run()
