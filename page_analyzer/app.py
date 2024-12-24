@@ -93,7 +93,7 @@ def add_url():
         logging.error('Ошибка сохранения в базу')
         return render_template(
             'base.html',
-                               url_from_request=url_from_request
+            url_from_request=url_from_request
         ), 422
 
     flash('Страница успешно добавлена', 'success')
