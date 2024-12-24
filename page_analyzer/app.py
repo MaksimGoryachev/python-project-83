@@ -1,7 +1,6 @@
 import logging
 import os
 
-import psycopg2
 from dotenv import load_dotenv
 from flask import (
     Flask,
@@ -40,13 +39,8 @@ def index():
 @app.get('/urls')
 def get_urls():
     """Возвращает страницу со списком всех сайтов."""
-    try:
-        urls = get_all_urls()
-        return render_template('urls.html', urls=urls)
-    except psycopg2.errors as e:
-        logging.exception('Произошла ошибка при получении списка URL: "%s"', e)
-        flash(f'Ошибка при получении списка страниц: {e}', 'danger')
-        return render_template('urls.html', urls=[])
+    urls = get_all_urls()
+    return render_template('urls.html', urls=urls)
 
 
 @app.get('/urls/<int:url_id>')

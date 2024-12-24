@@ -94,7 +94,7 @@ def create_new_url(url_to_save: str) -> int | None:
 
 
 def check_existing_url(url_to_save: str) -> int | None:
-    """Проверяет существует ли запись в таблице urls и возвращает её ID."""
+    """Проверяет, существует ли запись в таблице urls и возвращает её ID."""
     name = get_scheme_hostname(url_to_save)
 
     query_check = 'SELECT id FROM urls WHERE name = %s LIMIT 1'
@@ -145,20 +145,24 @@ def get_all_urls() -> list:
     ORDER BY urls.id DESC, url_checks.created_at DESC;
     """
 
-    with get_connection() as conn:
-        with conn.cursor() as cursor:
-            cursor.execute(query)
-            rows = cursor.fetchall()
-            urls = [
-                {
-                    'id': row[0],
-                    'name': row[1],
-                    'last_check_date': row[2] or '',
-                    'last_status_code': row[3] or ''
-                }
-                for row in rows
-                ]
-            return urls
+    try:
+        with get_connection() as conn:
+            with conn.cursor() as cursor:
+                cursor.execute(query)
+                rows = cursor.fetchall()
+                urls = [
+                    {
+                        'id': row[0],
+                        'name': row[1],
+                        'last_check_date': row[2] or '',
+                        'last_status_code': row[3] or ''
+                    }
+                    for row in rows
+                    ]
+                return urls
+    except psycopg2.Error as e:
+        logging.exception('Произошла ошибка при получении списка URL: "%s"', e)
+        return []
 
 
 def get_data_checks(url_id):
