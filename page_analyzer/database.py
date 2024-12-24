@@ -22,7 +22,7 @@ def get_connection():
     try:
         conn = psycopg2.connect(DATABASE_URL)
         return conn
-    except Exception as e:
+    except psycopg2.Error as e:
         logging.exception('Произошла ошибка при создании соединения "%s"', e)
         return None
 
@@ -77,27 +77,37 @@ def create_new_url(url_to_save: str) -> int | None:
     created_at = datetime.now().date()
     name = get_scheme_hostname(url_to_save)
 
-    query_check = 'SELECT id FROM urls WHERE name = %s LIMIT 1'
     query_insert = ('INSERT INTO urls (name, created_at) '
                     'VALUES (%s, %s) RETURNING id')
 
     try:
         with get_connection() as conn:
             with conn.cursor() as cursor:
-                cursor.execute(query_check, (name,))
-                existing_url = cursor.fetchone()
-                if existing_url:
-                    flash('Страница уже существует', 'info')
-                    return existing_url[0]
-
                 cursor.execute(query_insert, (name, created_at))
                 new_url_id = cursor.fetchone()
                 conn.commit()
-                if new_url_id:
-                    flash('Страница успешно добавлена', 'success')
-                    return new_url_id[0]
+                return new_url_id[0] if new_url_id else None
+
     except psycopg2.Error as e:
         logging.exception('Ошибка при добавлении страницы: "%s"', e)
+        return None
+
+
+def check_existing_url(url_to_save: str) -> int | None:
+    """Проверяет существует ли запись в таблице urls и возвращает её ID."""
+    name = get_scheme_hostname(url_to_save)
+
+    query_check = 'SELECT id FROM urls WHERE name = %s LIMIT 1'
+
+    try:
+        with get_connection() as conn:
+            with conn.cursor() as cursor:
+                cursor.execute(query_check, (name,))
+                existing_url = cursor.fetchone()
+                return existing_url[0] if existing_url else None
+
+    except psycopg2.Error as e:
+        logging.exception('Ошибка при проверке ID страницы: "%s"', e)
         return None
 
 

@@ -12,8 +12,10 @@ from flask import (
     request,
     url_for,
 )
+from werkzeug.exceptions import HTTPException
 
 from page_analyzer.database import (
+    check_existing_url,
     create_new_url,
     create_url_check,
     get_all_urls,
@@ -60,8 +62,9 @@ def get_url_id(url_id):
             checks_url=checks_url,
             url=url_data
         )
-    except Exception as e:
-        logging.exception('Произошла ошибка при получении данных URL: "%s"', e)
+    except HTTPException as e:
+        logging.exception('Произошла HTTP ошибка'
+                          ' при получении данных URL: "%s"', e)
         abort(500)
 
 
@@ -77,14 +80,23 @@ def add_url():
             'base.html',
             url_from_request=url_from_request
         ), 422
+
+    existing_url_id = check_existing_url(url_from_request)
+
+    if existing_url_id is not None:
+        flash('Страница уже существует', 'info')
+        return redirect(url_for('get_url_id', url_id=existing_url_id), 302)
+
     url_id = create_new_url(url_from_request)
 
     if url_id is None:
         logging.error('Ошибка сохранения в базу')
         return render_template(
             'base.html',
-            url_from_request=url_from_request,
+                               url_from_request=url_from_request
         ), 422
+
+    flash('Страница успешно добавлена', 'success')
     return redirect(url_for('get_url_id', url_id=url_id), 302)
 
 
