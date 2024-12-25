@@ -4,10 +4,6 @@ from urllib.parse import urlparse
 import requests
 import validators
 from bs4 import BeautifulSoup
-from flask import (
-    flash,
-    get_flashed_messages,
-)
 
 TIMEOUT = 15
 
@@ -31,13 +27,9 @@ def get_tag_content(resp):
     return h1, title, description
 
 
-def validate(url_from_request: str) -> list:
+def validate(url_from_request: str) -> bool:
     """Валидация URL."""
-    if len(url_from_request) > 255:
-        flash('URL превышает 255 символов', 'danger')
-    elif not validators.url(url_from_request):
-        flash('Некорректный URL', 'danger')
-    return get_flashed_messages(category_filter='danger')
+    return len(url_from_request) <= 255 and validators.url(url_from_request)
 
 
 def get_response(url):

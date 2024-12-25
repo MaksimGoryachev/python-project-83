@@ -66,10 +66,9 @@ def get_url_id(url_id):
 def add_url():
     """Добавление новой страницы."""
     url_from_request = request.form.get('url', '')
-    errors = validate(url_from_request)
 
-    if errors:
-        logging.error('Ошибка валидации URL')
+    if not validate(url_from_request):
+        flash('Некорректный URL', 'danger')
         return render_template(
             'base.html',
             url_from_request=url_from_request
@@ -121,5 +120,4 @@ def server_error(error):
 
 if __name__ == '__main__':
     setup_logging()
-    logging.info("Приложение запущено")
     app.run()
