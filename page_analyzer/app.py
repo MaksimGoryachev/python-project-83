@@ -84,7 +84,6 @@ def add_url():
     url_id = create_new_url(url_from_request)
 
     if url_id is None:
-        logging.error('Ошибка сохранения в базу')
         return render_template(
             'base.html',
             url_from_request=url_from_request
