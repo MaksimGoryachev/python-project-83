@@ -81,13 +81,17 @@ def add_url():
             url_from_request=url_from_request
         ), 422
 
-    existing_url_id = check_existing_url(url_from_request)
+    conn = get_connection()
+    existing_url_id = check_existing_url(url_from_request, conn)
 
     if existing_url_id is not None:
         flash('Страница уже существует', 'info')
         return redirect(url_for('get_url_id', url_id=existing_url_id), 302)
 
-    url_id = create_new_url(url_from_request)
+    url_id = create_new_url(url_from_request, conn)
+
+    conn.commit()
+    close_connection(conn)
 
     if url_id is None:
         return render_template(

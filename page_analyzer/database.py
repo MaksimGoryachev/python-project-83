@@ -86,7 +86,8 @@ def create_url_check(url_id: int):
         return None
 
 
-def create_new_url(url_to_save: str) -> int | None:
+def create_new_url(url_to_save: str,
+                   conn: psycopg2.extensions.connection) -> int | None:
     """Создает новую запись в таблице urls и возвращает её ID."""
     created_at = datetime.now().date()
     name = get_scheme_hostname(url_to_save)
@@ -95,30 +96,28 @@ def create_new_url(url_to_save: str) -> int | None:
                     'VALUES (%s, %s) RETURNING id')
 
     try:
-        with get_connection() as conn:
-            with conn.cursor() as cursor:
-                cursor.execute(query_insert, (name, created_at))
-                new_url_id = cursor.fetchone()
-                conn.commit()
-                return new_url_id[0] if new_url_id else None
+        with conn.cursor() as cursor:
+            cursor.execute(query_insert, (name, created_at))
+            new_url_id = cursor.fetchone()
+            return new_url_id[0] if new_url_id else None
 
     except psycopg2.Error as e:
         logging.exception('Ошибка при добавлении страницы: "%s"', e)
         return None
 
 
-def check_existing_url(url_to_save: str) -> int | None:
+def check_existing_url(url_to_save: str,
+                       conn: psycopg2.extensions.connection) -> int | None:
     """Проверяет, существует ли запись в таблице urls и возвращает её ID."""
     name = get_scheme_hostname(url_to_save)
 
     query_check = 'SELECT id FROM urls WHERE name = %s LIMIT 1'
 
     try:
-        with get_connection() as conn:
-            with conn.cursor() as cursor:
-                cursor.execute(query_check, (name,))
-                existing_url = cursor.fetchone()
-                return existing_url[0] if existing_url else None
+        with conn.cursor() as cursor:
+            cursor.execute(query_check, (name,))
+            existing_url = cursor.fetchone()
+            return existing_url[0] if existing_url else None
 
     except psycopg2.Error as e:
         logging.exception('Ошибка при проверке ID страницы: "%s"', e)
