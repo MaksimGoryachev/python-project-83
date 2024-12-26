@@ -1,6 +1,7 @@
 import logging
 import os
 from datetime import datetime
+from typing import Dict, List, Optional
 
 import psycopg2
 from dotenv import load_dotenv
@@ -16,14 +17,28 @@ load_dotenv()
 DATABASE_URL = os.getenv('DATABASE_URL')
 
 
-def get_connection():
+def get_connection() -> psycopg2.extensions.connection:
     """Создает и возвращает новое соединение с базой данных."""
     try:
         conn = psycopg2.connect(DATABASE_URL)
+        logging.info('Соединение с базой данных успешно установлено')
         return conn
-    except psycopg2.Error as e:
-        logging.exception('Произошла ошибка при создании соединения "%s"', e)
+    except psycopg2.OperationalError as e:
+        logging.exception('Ошибка при установлении соединения: %s', e)
         return None
+    except Exception as e:
+        logging.exception('Произошла неожиданная ошибка: %s', e)
+        return None
+
+
+def close_connection(connection: psycopg2.extensions.connection) -> None:
+    """Закрывает соединение с базой данных."""
+    if connection:
+        try:
+            connection.close()
+            logging.info('Соединение с базой данных закрыто')
+        except Exception as e:
+            logging.exception('Ошибка при закрытии соединения: %s', e)
 
 
 def create_url_check(url_id: int):
@@ -110,30 +125,30 @@ def check_existing_url(url_to_save: str) -> int | None:
         return None
 
 
-def get_one_url(url_id):
+def get_one_url(url_id: int,
+                conn: psycopg2.extensions.connection) -> Optional[Dict]:
     """Возвращает данные по указанной странице."""
     query = (
         'SELECT * FROM urls WHERE id = %s'
     )
     url_data = {}
     try:
-        with get_connection() as conn:
-            with conn.cursor() as cursor:
-                cursor.execute(query, (url_id,))
-                row = cursor.fetchone()
-                if row is not None:
-                    url_data = {
-                        'id': row[0],
-                        'name': row[1],
-                        'created_at': row[2]
-                    }
+        with conn.cursor() as cursor:
+            cursor.execute(query, (url_id,))
+            row = cursor.fetchone()
+            if row is not None:
+                url_data = {
+                    'id': row[0],
+                    'name': row[1],
+                    'created_at': row[2]
+                }
         return url_data
     except psycopg2.Error as e:
         logging.exception('Ошибка при получении данных страницы: "%s"', e)
         return None
 
 
-def get_all_urls() -> list:
+def get_all_urls(conn: psycopg2.extensions.connection) -> list:
     """Возвращает список всех добавленных страниц."""
     query = """
     SELECT DISTINCT ON (urls.id) urls.id, urls.name,
@@ -145,35 +160,35 @@ def get_all_urls() -> list:
     """
 
     try:
-        with get_connection() as conn:
-            with conn.cursor() as cursor:
-                cursor.execute(query)
-                rows = cursor.fetchall()
-                urls = [
-                    {
-                        'id': row[0],
-                        'name': row[1],
-                        'last_check_date': row[2] or '',
-                        'last_status_code': row[3] or ''
-                    }
-                    for row in rows
-                    ]
-                return urls
+        with conn.cursor() as cursor:
+            cursor.execute(query)
+            rows = cursor.fetchall()
+            urls = [
+                {
+                    'id': row[0],
+                    'name': row[1],
+                    'last_check_date': row[2] or '',
+                    'last_status_code': row[3] or ''
+                }
+                for row in rows
+            ]
+            return urls
 
     except psycopg2.Error as e:
         logging.exception('Произошла ошибка при получении списка URL: "%s"', e)
         return []
 
 
-def get_data_checks(url_id):
+def get_data_checks(url_id: int,
+                    conn: psycopg2.extensions.connection
+                    ) -> Optional[List[Dict]]:
     """Возвращает список всех проверок для указанной страницы."""
     checks_query = (
         'SELECT * FROM url_checks '
         'WHERE url_id = %s ORDER BY id DESC'
     )
     try:
-        with get_connection() as conn:
-            cursor = conn.cursor()
+        with conn.cursor() as cursor:
             cursor.execute(checks_query, (url_id,))
             data = cursor.fetchall()
             if data:

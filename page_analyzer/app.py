@@ -15,9 +15,11 @@ from werkzeug.exceptions import HTTPException
 
 from page_analyzer.database import (
     check_existing_url,
+    close_connection,
     create_new_url,
     create_url_check,
     get_all_urls,
+    get_connection,
     get_data_checks,
     get_one_url,
 )
@@ -39,18 +41,21 @@ def index():
 @app.get('/urls')
 def get_urls():
     """Возвращает страницу со списком всех сайтов."""
-    urls = get_all_urls()
+    conn = get_connection()
+    urls = get_all_urls(conn)
+    close_connection(conn)
     return render_template('urls.html', urls=urls)
 
 
 @app.get('/urls/<int:url_id>')
-def get_url_id(url_id):
+def get_url_id(url_id: int):
     """Возвращает страницу с полной информацией."""
-    url_data = get_one_url(url_id)
+    conn = get_connection()
+    url_data = get_one_url(url_id, conn)
     try:
         if url_data is None:
             abort(404)
-        checks_url = get_data_checks(url_id)
+        checks_url = get_data_checks(url_id, conn)
         return render_template(
             'url.html',
             checks_url=checks_url,
@@ -60,6 +65,8 @@ def get_url_id(url_id):
         logging.exception('Произошла HTTP ошибка'
                           ' при получении данных URL: "%s"', e)
         abort(500)
+    finally:
+        close_connection(conn)
 
 
 @app.post('/urls')
