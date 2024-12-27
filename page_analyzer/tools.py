@@ -1,11 +1,41 @@
 import logging
+import os
 from urllib.parse import urlparse
 
+import psycopg2
 import requests
 import validators
 from bs4 import BeautifulSoup
+from dotenv import load_dotenv
+
+load_dotenv()
 
 TIMEOUT = 15
+DATABASE_URL = os.getenv('DATABASE_URL')
+
+
+def get_connection() -> psycopg2.extensions.connection:
+    """Создает и возвращает новое соединение с базой данных."""
+    try:
+        conn = psycopg2.connect(DATABASE_URL)
+        logging.info('Соединение с базой данных успешно установлено')
+        return conn
+    except psycopg2.OperationalError as e:
+        logging.exception('Ошибка при установлении соединения: %s', e)
+        return None
+    except Exception as e:
+        logging.exception('Произошла неожиданная ошибка: %s', e)
+        return None
+
+
+def close_connection(connection: psycopg2.extensions.connection) -> None:
+    """Закрывает соединение с базой данных."""
+    if connection:
+        try:
+            connection.close()
+            logging.info('Соединение с базой данных закрыто')
+        except Exception as e:
+            logging.exception('Ошибка при закрытии соединения: %s', e)
 
 
 def get_tag_content(resp):

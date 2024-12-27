@@ -1,6 +1,9 @@
 import logging
 import os
+from datetime import datetime
 
+import psycopg2
+import requests
 from dotenv import load_dotenv
 from flask import (
     Flask,
@@ -15,16 +18,21 @@ from werkzeug.exceptions import HTTPException
 
 from page_analyzer.database import (
     check_existing_url,
-    close_connection,
     create_new_url,
     create_url_check,
     get_all_urls,
-    get_connection,
     get_data_checks,
     get_one_url,
 )
 from page_analyzer.logging_config import setup_logging
-from page_analyzer.tools import validate
+from page_analyzer.tools import (
+    close_connection,
+    get_connection,
+    get_response,
+    get_scheme_hostname,
+    get_tag_content,
+    validate,
+)
 
 load_dotenv()
 app = Flask(__name__)
@@ -70,7 +78,7 @@ def get_url_id(url_id: int):
 
 
 @app.post('/urls')
-def add_url():
+def add_url() -> tuple:
     """Добавление новой страницы."""
     url_from_request = request.form.get('url', '')
 
@@ -82,16 +90,17 @@ def add_url():
         ), 422
 
     conn = get_connection()
-    existing_url_id = check_existing_url(url_from_request, conn)
+    name = get_scheme_hostname(url_from_request)
+    existing_url_id = check_existing_url(name, conn)
 
     if existing_url_id is not None:
         flash('Страница уже существует', 'info')
         return redirect(url_for('get_url_id', url_id=existing_url_id), 302)
 
-    url_id = create_new_url(url_from_request, conn)
-
-    conn.commit()
-    close_connection(conn)
+    created_at = datetime.now().date()
+    # name = get_scheme_hostname(url_from_request)
+    params = (name, created_at)
+    url_id = create_new_url(params, conn)
 
     if url_id is None:
         return render_template(
@@ -100,19 +109,54 @@ def add_url():
         ), 422
 
     flash('Страница успешно добавлена', 'success')
+    conn.commit()
+    close_connection(conn)
     return redirect(url_for('get_url_id', url_id=url_id), 302)
 
 
 @app.post('/urls/<int:url_id>/checks')
 def check_url(url_id):
     """Проверка статуса страницы."""
-    result = create_url_check(url_id)
-    if result is None:
-        flash('Произошла ошибка при проверке', 'danger')
-    else:
-        flash('Страница успешно проверена', 'success')
+    with get_connection() as conn:
+        try:
+            url_data = get_one_url(url_id, conn)
+            if not url_data:
+                flash('Произошла ошибка при проверке', 'danger')
+                logging.error('Не удалось получить данные по ID')  # abort (404)
+                return redirect(url_for('get_url_id', url_id=url_id))
 
-    return redirect(url_for('get_url_id', url_id=url_id))
+            url_name = url_data['name']
+            response = get_response(url_name)  # type: ignore
+            if response is None:
+                flash('Произошла ошибка при проверке', 'danger')
+                return redirect(url_for('get_url_id', url_id=url_id))
+
+            status_code = response.status_code
+            if status_code != 200:
+                flash('Произошла ошибка при проверке', 'danger')
+                logging.warning('Код статуса не равен 200')
+                return redirect(url_for('get_url_id', url_id=url_id))
+
+            h1, title, description = get_tag_content(response)
+            params = (
+                url_id,
+                status_code,
+                h1,
+                title,
+                description,
+                datetime.now().date()
+            )
+            if create_url_check(conn, params):
+                conn.commit()
+            flash('Страница успешно проверена', 'success')
+            return redirect(url_for('get_url_id', url_id=url_id))
+
+        except (psycopg2.Error, requests.RequestException) as e:
+            flash('Произошла ошибка при проверке',
+                  'danger')
+            logging.error('Ошибка при проверке страницы с ID %s: "%s"',
+                          url_id, e)
+            return redirect(url_for('get_url_id', url_id=url_id))
 
 
 @app.errorhandler(404)

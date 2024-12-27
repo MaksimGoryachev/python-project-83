@@ -1,103 +1,34 @@
 import logging
-import os
-from datetime import datetime
 from typing import Dict, List, Optional
 
 import psycopg2
-from dotenv import load_dotenv
-
-from page_analyzer.tools import (
-    get_response,
-    get_scheme_hostname,
-    get_tag_content,
-)
-
-load_dotenv()
-
-DATABASE_URL = os.getenv('DATABASE_URL')
 
 
-def get_connection() -> psycopg2.extensions.connection:
-    """Создает и возвращает новое соединение с базой данных."""
-    try:
-        conn = psycopg2.connect(DATABASE_URL)
-        logging.info('Соединение с базой данных успешно установлено')
-        return conn
-    except psycopg2.OperationalError as e:
-        logging.exception('Ошибка при установлении соединения: %s', e)
-        return None
-    except Exception as e:
-        logging.exception('Произошла неожиданная ошибка: %s', e)
-        return None
-
-
-def close_connection(connection: psycopg2.extensions.connection) -> None:
-    """Закрывает соединение с базой данных."""
-    if connection:
-        try:
-            connection.close()
-            logging.info('Соединение с базой данных закрыто')
-        except Exception as e:
-            logging.exception('Ошибка при закрытии соединения: %s', e)
-
-
-def create_url_check(url_id: int):
+def create_url_check(conn: psycopg2.extensions.connection, params) -> bool:
     """Создает запись в таблице url_checks."""
-    query_check = 'SELECT name FROM urls WHERE id = %s LIMIT 1'
     query_insert = (
-        'INSERT INTO url_checks'
-        '(url_id, status_code, h1, title, description, created_at)'
+        'INSERT INTO url_checks (url_id, status_code, h1, title,'
+        ' description, created_at)'
         'VALUES (%s, %s, %s, %s, %s, %s)'
     )
     try:
-        with get_connection() as conn:
-            with conn.cursor() as cursor:
-                cursor.execute(query_check, (url_id,))
-                result = cursor.fetchone()
-                if not result:
-                    logging.error('Не удалось получить данные по ID')
-                    return None
-
-                name = result[0]
-                resp = get_response(name)  # type: ignore
-                if resp is None:
-                    logging.error('На запрос не получен ответ: '
-                                  'RequestException')
-                    return None
-
-                status_code = resp.status_code
-                if status_code != 200:
-                    logging.warning('Код статуса не равен 200')
-                    return None
-
-                h1, title, description = get_tag_content(resp)
-                params = (url_id,
-                          status_code,
-                          h1,
-                          title,
-                          description,
-                          datetime.now().date())
-                cursor.execute(query_insert, params)
-                conn.commit()
-                return True
-
+        with conn.cursor() as cursor:
+            cursor.execute(query_insert, params)
+            return True
     except psycopg2.Error as e:
-        logging.exception('Произошла ошибка при проверке "%s"', e)
-        return None
+        logging.error('Произошла ошибка при выполнении запроса:  "%s"', e)
+        return False
 
 
-def create_new_url(url_to_save: str,
+def create_new_url(params,
                    conn: psycopg2.extensions.connection) -> int | None:
     """Создает новую запись в таблице urls и возвращает её ID."""
-    created_at = datetime.now().date()
-    name = get_scheme_hostname(url_to_save)
-
     query_insert = ('INSERT INTO urls (name, created_at) '
                     'VALUES (%s, %s) RETURNING id')
 
     try:
         with conn.cursor() as cursor:
-            cursor.execute(query_insert, (name, created_at))
+            cursor.execute(query_insert, params)
             new_url_id = cursor.fetchone()
             return new_url_id[0] if new_url_id else None
 
@@ -106,11 +37,9 @@ def create_new_url(url_to_save: str,
         return None
 
 
-def check_existing_url(url_to_save: str,
+def check_existing_url(name,
                        conn: psycopg2.extensions.connection) -> int | None:
     """Проверяет, существует ли запись в таблице urls и возвращает её ID."""
-    name = get_scheme_hostname(url_to_save)
-
     query_check = 'SELECT id FROM urls WHERE name = %s LIMIT 1'
 
     try:
