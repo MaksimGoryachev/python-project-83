@@ -53,7 +53,7 @@ def check_existing_url(name,
         return None
 
 
-def get_one_url(url_id: int,
+def get_url_by_id(url_id: int,
                 conn: psycopg2.extensions.connection) -> Optional[Dict]:
     """Возвращает данные по указанной странице."""
     query = (

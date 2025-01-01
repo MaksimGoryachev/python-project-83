@@ -22,7 +22,7 @@ from page_analyzer.database import (
     create_url_check,
     get_all_urls,
     get_data_checks,
-    get_one_url,
+    get_url_by_id,
 )
 from page_analyzer.logging_config import setup_logging
 from page_analyzer.tools import (
@@ -59,7 +59,7 @@ def get_urls():
 def get_url_id(url_id: int):
     """Возвращает страницу с полной информацией."""
     conn = get_connection()
-    url_data = get_one_url(url_id, conn)
+    url_data = get_url_by_id(url_id, conn)
     try:
         if url_data is None:
             abort(404)
@@ -119,7 +119,7 @@ def check_url(url_id):
     """Проверка статуса страницы."""
     with get_connection() as conn:
         try:
-            url_data = get_one_url(url_id, conn)
+            url_data = get_url_by_id(url_id, conn)
             if not url_data:
                 flash('Произошла ошибка при проверке', 'danger')
                 logging.error('Не удалось получить данные по ID')  # abort (404)
