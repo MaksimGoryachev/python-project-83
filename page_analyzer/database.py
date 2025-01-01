@@ -1,13 +1,9 @@
 import logging
-import os
 from typing import Dict, List, Optional
 
 import psycopg2
-from dotenv import load_dotenv
 
-load_dotenv()
-
-DATABASE_URL = os.getenv('DATABASE_URL')
+from page_analyzer.config import DATABASE_URL
 
 
 def get_connection() -> psycopg2.extensions.connection:

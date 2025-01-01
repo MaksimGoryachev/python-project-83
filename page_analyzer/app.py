@@ -16,6 +16,7 @@ from flask import (
 )
 from werkzeug.exceptions import HTTPException
 
+from page_analyzer.config import setup_logging
 from page_analyzer.database import (
     close_connection,
     create_url,
@@ -26,7 +27,6 @@ from page_analyzer.database import (
     get_url_by_id,
     get_url_by_name,
 )
-from page_analyzer.logging_config import setup_logging
 from page_analyzer.tools import (
     get_response,
     get_scheme_hostname,
@@ -38,6 +38,7 @@ load_dotenv()
 app = Flask(__name__)
 
 app.secret_key = os.getenv('SECRET_KEY')
+app.config['DATABASE_URL'] = os.getenv('DATABASE_URL')
 
 
 @app.route('/')
