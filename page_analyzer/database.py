@@ -26,8 +26,10 @@ def close_connection(connection: psycopg2.extensions.connection) -> None:
         try:
             connection.close()
             logging.info('Соединение с базой данных закрыто')
-        except Exception as e:
+        except psycopg2.Error as e:
             logging.exception('Ошибка при закрытии соединения: %s', e)
+        except Exception as e:
+            logging.exception('Произошла неожиданная ошибка: %s', e)
 
 
 def create_url_check(conn: psycopg2.extensions.connection, params) -> bool:
