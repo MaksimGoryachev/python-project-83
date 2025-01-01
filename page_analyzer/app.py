@@ -17,17 +17,17 @@ from flask import (
 from werkzeug.exceptions import HTTPException
 
 from page_analyzer.database import (
+    close_connection,
     create_url,
     create_url_check,
     get_all_urls,
+    get_connection,
     get_data_checks,
     get_url_by_id,
     get_url_by_name,
 )
 from page_analyzer.logging_config import setup_logging
 from page_analyzer.tools import (
-    close_connection,
-    get_connection,
     get_response,
     get_scheme_hostname,
     get_tag_content,
@@ -175,4 +175,3 @@ def server_error(error):
 
 if __name__ == '__main__':
     setup_logging()
-    app.run()
