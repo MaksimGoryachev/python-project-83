@@ -17,12 +17,12 @@ from flask import (
 from werkzeug.exceptions import HTTPException
 
 from page_analyzer.database import (
-    check_existing_url,
-    create_new_url,
+    create_url,
     create_url_check,
     get_all_urls,
     get_data_checks,
     get_url_by_id,
+    get_url_by_name,
 )
 from page_analyzer.logging_config import setup_logging
 from page_analyzer.tools import (
@@ -91,7 +91,7 @@ def add_url() -> tuple:
 
     conn = get_connection()
     name = get_scheme_hostname(url_from_request)
-    existing_url_id = check_existing_url(name, conn)
+    existing_url_id = get_url_by_name(name, conn)
 
     if existing_url_id is not None:
         flash('Страница уже существует', 'info')
@@ -100,7 +100,7 @@ def add_url() -> tuple:
     created_at = datetime.now().date()
     # name = get_scheme_hostname(url_from_request)
     params = (name, created_at)
-    url_id = create_new_url(params, conn)
+    url_id = create_url(params, conn)
 
     if url_id is None:
         return render_template(

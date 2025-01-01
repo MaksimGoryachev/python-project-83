@@ -20,8 +20,8 @@ def create_url_check(conn: psycopg2.extensions.connection, params) -> bool:
         return False
 
 
-def create_new_url(params,
-                   conn: psycopg2.extensions.connection) -> int | None:
+def create_url(params,
+               conn: psycopg2.extensions.connection) -> int | None:
     """Создает новую запись в таблице urls и возвращает её ID."""
     query_insert = ('INSERT INTO urls (name, created_at) '
                     'VALUES (%s, %s) RETURNING id')
@@ -37,8 +37,8 @@ def create_new_url(params,
         return None
 
 
-def check_existing_url(name,
-                       conn: psycopg2.extensions.connection) -> int | None:
+def get_url_by_name(name,
+                    conn: psycopg2.extensions.connection) -> int | None:
     """Проверяет, существует ли запись в таблице urls и возвращает её ID."""
     query_check = 'SELECT id FROM urls WHERE name = %s LIMIT 1'
 
@@ -54,7 +54,7 @@ def check_existing_url(name,
 
 
 def get_url_by_id(url_id: int,
-                conn: psycopg2.extensions.connection) -> Optional[Dict]:
+                  conn: psycopg2.extensions.connection) -> Optional[Dict]:
     """Возвращает данные по указанной странице."""
     query = (
         'SELECT * FROM urls WHERE id = %s'
