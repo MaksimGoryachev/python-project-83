@@ -3,6 +3,7 @@ from datetime import datetime
 from typing import Dict, List, Optional
 
 import psycopg2
+from psycopg2.extras import DictCursor
 
 from page_analyzer.config import DATABASE_URL
 
@@ -85,21 +86,15 @@ def get_url_by_name(name,
 def get_url_by_id(url_id: int,
                   conn: psycopg2.extensions.connection) -> Optional[Dict]:
     """Возвращает данные по указанной странице."""
-    query = (
-        'SELECT * FROM urls WHERE id = %s'
-    )
-    url_data = {}
+    query = 'SELECT * FROM urls WHERE id = %s'
+
     try:
-        with conn.cursor() as cursor:
+        with conn.cursor(cursor_factory=DictCursor) as cursor:
             cursor.execute(query, (url_id,))
             row = cursor.fetchone()
             if row is not None:
-                url_data = {
-                    'id': row[0],
-                    'name': row[1],
-                    'created_at': row[2]
-                }
-        return url_data
+                return dict(row)
+        return None
     except psycopg2.Error as e:
         logging.exception('Ошибка при получении данных страницы: "%s"', e)
         return None
