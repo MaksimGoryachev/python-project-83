@@ -103,12 +103,13 @@ def get_url_by_id(url_id: int,
 def get_all_urls(conn: psycopg2.extensions.connection) -> list:
     """Возвращает список всех добавленных страниц."""
     query = """
-    SELECT DISTINCT ON (urls.id) urls.id, urls.name,
-    MAX(url_checks.created_at), url_checks.status_code
+    SELECT urls.id, urls.name,
+    MAX(url_checks.created_at) AS last_check_date,
+    MAX(url_checks.status_code) AS last_status_code
     FROM urls
     LEFT JOIN url_checks ON urls.id = url_checks.url_id
-    GROUP BY urls.id, url_checks.status_code, url_checks.created_at
-    ORDER BY urls.id DESC, url_checks.created_at DESC;
+    GROUP BY urls.id
+    ORDER BY urls.id DESC;
     """
 
     try:
