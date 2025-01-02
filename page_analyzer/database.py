@@ -1,4 +1,5 @@
 import logging
+from datetime import datetime
 from typing import Dict, List, Optional
 
 import psycopg2
@@ -48,7 +49,7 @@ def create_url_check(conn: psycopg2.extensions.connection, params) -> bool:
         return False
 
 
-def create_url(params,
+def create_url(name,
                conn: psycopg2.extensions.connection) -> int | None:
     """Создает новую запись в таблице urls и возвращает её ID."""
     query_insert = ('INSERT INTO urls (name, created_at) '
@@ -56,7 +57,7 @@ def create_url(params,
 
     try:
         with conn.cursor() as cursor:
-            cursor.execute(query_insert, params)
+            cursor.execute(query_insert, (name, datetime.now().date()))
             new_url_id = cursor.fetchone()
             return new_url_id[0] if new_url_id else None
 
