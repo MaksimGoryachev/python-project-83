@@ -1,6 +1,6 @@
 import logging
 from datetime import datetime
-from typing import Dict, List, Optional
+from typing import Dict, List, Tuple
 
 import psycopg2
 from psycopg2.extras import DictCursor
@@ -8,7 +8,7 @@ from psycopg2.extras import DictCursor
 from page_analyzer.config import DATABASE_URL
 
 
-def get_connection() -> psycopg2.extensions.connection:
+def get_connection() -> psycopg2.extensions.connection | None:
     """Создает и возвращает новое соединение с базой данных."""
     try:
         conn = psycopg2.connect(DATABASE_URL)
@@ -34,7 +34,8 @@ def close_connection(connection: psycopg2.extensions.connection) -> None:
             logging.exception('Произошла неожиданная ошибка: %s', e)
 
 
-def create_url_check(conn: psycopg2.extensions.connection, params) -> bool:
+def create_url_check(conn: psycopg2.extensions.connection,
+                     params: Tuple) -> bool:
     """Создает запись в таблице url_checks."""
     query_insert = (
         'INSERT INTO url_checks (url_id, status_code, h1, title,'
@@ -50,7 +51,7 @@ def create_url_check(conn: psycopg2.extensions.connection, params) -> bool:
         return False
 
 
-def create_url(name,
+def create_url(name: str,
                conn: psycopg2.extensions.connection) -> int | None:
     """Создает новую запись в таблице urls и возвращает её ID."""
     query_insert = ('INSERT INTO urls (name, created_at) '
@@ -84,7 +85,7 @@ def get_url_by_name(name,
 
 
 def get_url_by_id(url_id: int,
-                  conn: psycopg2.extensions.connection) -> Optional[Dict]:
+                  conn: psycopg2.extensions.connection) -> Dict | None:
     """Возвращает данные по указанной странице."""
     query = 'SELECT * FROM urls WHERE id = %s'
 
@@ -134,7 +135,7 @@ def get_all_urls(conn: psycopg2.extensions.connection) -> list:
 
 def get_data_checks(url_id: int,
                     conn: psycopg2.extensions.connection
-                    ) -> Optional[List[Dict]]:
+                    ) -> List[Dict] | None:
     """Возвращает список всех проверок для указанной страницы."""
     checks_query = (
         'SELECT * FROM url_checks '
