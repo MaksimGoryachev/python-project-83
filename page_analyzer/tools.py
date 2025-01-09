@@ -13,11 +13,11 @@ def get_tag_content(resp):
     soup = BeautifulSoup(resp.text, 'html.parser')
 
     h1_tag = soup.find('h1')
-    h1 = h1_tag.text.strip() if h1_tag else ''
+    h1 = h1_tag.text.strip()[:255] if h1_tag else ''
     logging.info('Содержимое тега H1: "%s"', h1)
 
     title_tag = soup.find('title')
-    title = title_tag.text.strip() if title_tag else ''
+    title = title_tag.text.strip()[:255] if title_tag else ''
     logging.info('Содержимое тега Title: "%s"', title)
 
     description_tag = soup.find('meta', attrs={'name': 'description'})
