@@ -101,7 +101,7 @@ def get_url_by_id(url_id: int,
         return None
 
 
-def get_all_urls(conn: psycopg2.extensions.connection) -> list:
+def get_all_urls(conn: psycopg2.extensions.connection) -> List[Dict]:
     """Возвращает список всех добавленных страниц."""
     query = """
     SELECT urls.id, urls.name,
@@ -114,15 +114,15 @@ def get_all_urls(conn: psycopg2.extensions.connection) -> list:
     """
 
     try:
-        with conn.cursor() as cursor:
+        with conn.cursor(cursor_factory=DictCursor) as cursor:
             cursor.execute(query)
             rows = cursor.fetchall()
             urls = [
                 {
-                    'id': row[0],
-                    'name': row[1],
-                    'last_check_date': row[2] or '',
-                    'last_status_code': row[3] or ''
+                    'id': row['id'],
+                    'name': row['name'],
+                    'last_check_date': row['last_check_date'] or None,
+                    'last_status_code': row['last_status_code'] or None
                 }
                 for row in rows
             ]
@@ -142,21 +142,11 @@ def get_data_checks(url_id: int,
         'WHERE url_id = %s ORDER BY id DESC'
     )
     try:
-        with conn.cursor() as cursor:
+        with conn.cursor(cursor_factory=DictCursor) as cursor:
             cursor.execute(checks_query, (url_id,))
             data = cursor.fetchall()
             if data:
-                checks_data = [
-                    {
-                        'id': row[0],
-                        'status_code': row[2],
-                        'h1': row[3],
-                        'title': row[4],
-                        'description': row[5],
-                        'created_at': row[6]
-                    }
-                    for row in data
-                ]
+                checks_data = [dict(row) for row in data]
                 return checks_data
         return None
     except psycopg2.Error as e:
