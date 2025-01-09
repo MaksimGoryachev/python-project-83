@@ -18,6 +18,7 @@ from werkzeug.exceptions import HTTPException
 from page_analyzer.config import setup_logging
 from page_analyzer.database import (
     close_connection,
+    commit_transaction,
     create_url,
     create_url_check,
     get_all_urls,
@@ -107,7 +108,7 @@ def add_url() -> tuple:
             url_from_request=url_from_request
         ), 422
 
-    conn.commit()
+    commit_transaction(conn)
     flash('Страница успешно добавлена', 'success')
     close_connection(conn)
     return redirect(url_for('get_url_id', url_id=url_id), 302)
@@ -146,7 +147,7 @@ def check_url(url_id):
             datetime.now().date()
         )
         if create_url_check(conn, params):
-            conn.commit()
+            commit_transaction(conn)
         flash('Страница успешно проверена', 'success')
         return redirect(url_for('get_url_id', url_id=url_id))
 
