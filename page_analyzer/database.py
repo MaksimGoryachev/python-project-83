@@ -34,6 +34,16 @@ def close_connection(connection: psycopg2.extensions.connection) -> None:
             logging.exception('Произошла неожиданная ошибка: %s', e)
 
 
+def commit_transaction(conn: psycopg2.extensions.connection) -> None:
+    """Коммитит изменения в базе данных."""
+    if conn:
+        try:
+            conn.commit()
+            logging.info('Изменения успешно зафиксированы в базе данных')
+        except psycopg2.Error as e:
+            logging.exception('Ошибка при фиксации изменений: %s', e)
+
+
 def create_url_check(conn: psycopg2.extensions.connection,
                      params: Tuple) -> bool:
     """Создает запись в таблице url_checks."""
