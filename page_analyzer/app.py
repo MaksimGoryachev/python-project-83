@@ -34,6 +34,7 @@ from page_analyzer.tools import (
 )
 
 load_dotenv()
+setup_logging()
 app = Flask(__name__)
 
 app.secret_key = os.getenv('SECRET_KEY')
@@ -171,7 +172,3 @@ def server_error(error):
     """Обработчик ошибки 500."""
     logging.exception(error)
     return render_template('500.html'), 500
-
-
-if __name__ == '__main__':
-    setup_logging()
