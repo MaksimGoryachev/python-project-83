@@ -1,9 +1,7 @@
 import logging
-import os
 from datetime import datetime
 
 import requests
-from dotenv import load_dotenv
 from flask import (
     Flask,
     abort,
@@ -15,7 +13,7 @@ from flask import (
 )
 from werkzeug.exceptions import HTTPException
 
-from page_analyzer.config import setup_logging
+from page_analyzer.config import SECRET_KEY, setup_logging
 from page_analyzer.database import (
     close_connection,
     commit_transaction,
@@ -34,11 +32,10 @@ from page_analyzer.tools import (
     validate,
 )
 
-load_dotenv()
 setup_logging()
 app = Flask(__name__)
 
-app.secret_key = os.getenv('SECRET_KEY')
+app.secret_key = SECRET_KEY
 
 
 @app.route('/')
