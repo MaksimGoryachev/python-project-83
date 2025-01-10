@@ -113,28 +113,37 @@ def get_url_by_id(url_id: int,
 
 def get_all_urls(conn: psycopg2.extensions.connection) -> List[Dict]:
     """Возвращает список всех добавленных страниц."""
-    query = """
-    SELECT urls.id, urls.name,
-    MAX(url_checks.created_at) AS last_check_date,
-    MAX(url_checks.status_code) AS last_status_code
-    FROM urls
-    LEFT JOIN url_checks ON urls.id = url_checks.url_id
-    GROUP BY urls.id
-    ORDER BY urls.id DESC;
-    """
+    urls_query = 'SELECT id, name FROM urls ORDER BY id DESC'
+    urls_check_query = (
+        'SELECT url_id, '
+        'MAX(created_at) AS created_at, '
+        'MAX(status_code) AS status_code '
+        'FROM url_checks GROUP BY url_id'
+    )
 
     try:
         with conn.cursor(cursor_factory=DictCursor) as cursor:
-            cursor.execute(query)
-            rows = cursor.fetchall()
+            cursor.execute(urls_query)
+            urls_rows = cursor.fetchall()
+
+            cursor.execute(urls_check_query)
+            url_checks_rows = cursor.fetchall()
+
+            last_checks = {row['url_id']: {
+                'last_check_date': row['created_at'],
+                'last_status_code': row['status_code']
+            } for row in url_checks_rows}
+
             urls = [
                 {
                     'id': row['id'],
                     'name': row['name'],
-                    'last_check_date': row['last_check_date'] or None,
-                    'last_status_code': row['last_status_code'] or None
+                    'last_check_date': last_checks.get(row['id'], {}).get(
+                        'last_check_date', None),
+                    'last_status_code': last_checks.get(row['id'], {}).get(
+                        'last_status_code', None)
                 }
-                for row in rows
+                for row in urls_rows
             ]
             return urls
 
